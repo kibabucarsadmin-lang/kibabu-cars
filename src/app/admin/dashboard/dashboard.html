@@ -1,0 +1,287 @@
+<div class="app" [class.nav-open]="navOpen()">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side" aria-label="Admin navigation">
+    <a routerLink="/" class="side-brand" aria-label="Kibabu Cars website">
+      <img src="logo-badge.png" alt="" width="40" height="40" />
+      <span><strong>Kibabu Cars</strong><small>Back office</small></span>
+    </a>
+
+    <nav class="side-nav">
+      <p class="grp">Operations</p>
+      @for (n of navOps; track n.id) {
+        <button type="button" class="nav-item" [class.on]="section() === n.id" (click)="go(n.id)" [attr.aria-current]="section() === n.id ? 'page' : null">
+          <mat-icon>{{ n.icon }}</mat-icon><span>{{ n.label }}</span>
+          @if (n.id === 'bookings' && upcoming().length) { <em class="count">{{ upcoming().length }}</em> }
+          @if (n.id === 'messages' && stats()?.unreadMessages) { <em class="count hot">{{ stats()?.unreadMessages }}</em> }
+        </button>
+      }
+      <p class="grp">Website</p>
+      @for (n of navSite; track n.id) {
+        <button type="button" class="nav-item" [class.on]="section() === n.id" (click)="go(n.id)" [attr.aria-current]="section() === n.id ? 'page' : null">
+          <mat-icon>{{ n.icon }}</mat-icon><span>{{ n.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="side-foot">
+      <a class="nav-item" routerLink="/" target="_blank"><mat-icon>open_in_new</mat-icon><span>View website</span></a>
+      <button type="button" class="nav-item" (click)="logout()"><mat-icon>logout</mat-icon><span>Log out</span></button>
+    </div>
+  </aside>
+  <button type="button" class="scrim" aria-label="Close menu" (click)="navOpen.set(false)"></button>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="top">
+      <button type="button" class="icon-btn burger" (click)="navOpen.set(true)" aria-label="Open menu"><mat-icon>menu</mat-icon></button>
+      <div class="title">
+        <h1>{{ titles[section()].t }}</h1>
+        <p>{{ titles[section()].d }}</p>
+      </div>
+      <div class="top-actions">
+        @if (section() === 'bookings') {
+          <button mat-stroked-button (click)="exportCsv()"><mat-icon>download</mat-icon> Export CSV</button>
+        }
+        <button type="button" class="icon-btn" (click)="load()" matTooltip="Refresh" aria-label="Refresh"><mat-icon [class.spin]="loading()">refresh</mat-icon></button>
+      </div>
+    </header>
+
+    <main class="content">
+      @switch (section()) {
+
+        <!-- ============ OVERVIEW ============ -->
+        @case ('overview') {
+          <p class="hello">{{ greeting() }}. Here is what’s happening today, {{ today | date: 'EEEE d MMMM' }}.</p>
+
+          @if (stats(); as s) {
+            <section class="kpis">
+              <button type="button" class="kpi" (click)="openBookings('all')">
+                <span class="k-ico k-sun"><mat-icon>fiber_new</mat-icon></span>
+                <span class="k-num">{{ s.newToday }}</span><span class="k-lbl">New bookings, last 24 h</span>
+              </button>
+              <button type="button" class="kpi" (click)="openBookings('upcoming')">
+                <span class="k-ico k-lagoon"><mat-icon>event_upcoming</mat-icon></span>
+                <span class="k-num">{{ s.upcomingPickups }}</span><span class="k-lbl">Pickups in the next 7 days</span>
+              </button>
+              <button type="button" class="kpi" (click)="openBookings('active')">
+                <span class="k-ico k-blue"><mat-icon>directions_car</mat-icon></span>
+                <span class="k-num">{{ s.activeRentals }} <small>/ {{ fleetSize() }}</small></span><span class="k-lbl">Cars on the road</span>
+              </button>
+              <div class="kpi static">
+                <span class="k-ico k-green"><mat-icon>payments</mat-icon></span>
+                <span class="k-num">{{ s.revenueConfirmed | usd }}</span><span class="k-lbl">Confirmed booking value</span>
+              </div>
+            </section>
+          }
+
+          <div class="ov-grid">
+            <section class="card">
+              <header class="card-h"><h2>Today</h2><span class="pill">{{ todayItems().length }}</span></header>
+              @for (it of todayItems(); track it.b.id + it.kind) {
+                <button type="button" class="tl-row" (click)="openBooking(it.b)">
+                  <span class="tl-time">{{ it.at | date: 'HH:mm' }}</span>
+                  <span class="tl-dot" [class.ret]="it.kind === 'return'"></span>
+                  <span class="tl-main">
+                    <strong>{{ it.kind === 'pickup' ? 'Pickup' : 'Return' }} · {{ it.b.carName }}</strong>
+                    <small>{{ it.b.customer.name }} · {{ loc(it.kind === 'pickup' ? it.b.pickupLocation : it.b.returnLocation) }}{{ it.kind === 'pickup' && it.b.pickupDetails ? ' · ' + it.b.pickupDetails : '' }}</small>
+                  </span>
+                  <mat-icon class="chev">chevron_right</mat-icon>
+                </button>
+              } @empty {
+                <div class="empty"><mat-icon>event_available</mat-icon><p>No pickups or returns today.</p></div>
+              }
+            </section>
+
+            <section class="card">
+              <header class="card-h"><h2>Next 7 days</h2><button mat-button (click)="openBookings('upcoming')">See all</button></header>
+              @for (b of week().slice(0, 6); track b.id) {
+                <button type="button" class="list-row" (click)="openBooking(b)">
+                  <span class="date-tile"><b>{{ b.pickupAt | date: 'd' }}</b><small>{{ b.pickupAt | date: 'MMM' }}</small></span>
+                  <span class="lr-main"><strong>{{ b.customer.name }}</strong><small>{{ b.carName }} · {{ b.quote.days }} days · {{ loc(b.pickupLocation) }}</small></span>
+                  <span class="status status--{{ b.status }}">{{ b.status }}</span>
+                </button>
+              } @empty {
+                <div class="empty"><mat-icon>beach_access</mat-icon><p>No pickups in the coming week.</p></div>
+              }
+            </section>
+
+            <section class="card span2">
+              <header class="card-h"><h2>Latest bookings</h2><button mat-button (click)="openBookings('all')">All bookings</button></header>
+              <div class="mini-table">
+                @for (b of latest(); track b.id) {
+                  <button type="button" class="mt-row" (click)="openBooking(b)">
+                    <span class="ref">{{ b.ref }}</span>
+                    <span><strong>{{ b.customer.name }}</strong><small>{{ b.customer.country }}</small></span>
+                    <span>{{ b.carName }}</span>
+                    <span class="muted">{{ b.pickupAt | date: 'd MMM' }} → {{ b.returnAt | date: 'd MMM' }}</span>
+                    <span class="amt">{{ b.quote.total | usd }}</span>
+                    <span class="status status--{{ b.status }}">{{ b.status }}</span>@if (attention(b); as a) {<span class="attn"><mat-icon>error</mat-icon>{{ a }}</span>}
+                  </button>
+                } @empty {
+                  <div class="empty"><mat-icon>inbox</mat-icon><p>Bookings from the website appear here.</p></div>
+                }
+              </div>
+            </section>
+
+            <section class="card quick">
+              <header class="card-h"><h2>Quick actions</h2></header>
+              <button type="button" class="qa" (click)="go('cars')"><mat-icon>sell</mat-icon><span><strong>Change prices</strong><small>Edit daily rates and cars</small></span></button>
+              <button type="button" class="qa" (click)="go('blog')"><mat-icon>edit_note</mat-icon><span><strong>Write a blog post</strong><small>Helps people find you on Google</small></span></button>
+              <button type="button" class="qa" (click)="go('messages')"><mat-icon>mail</mat-icon><span><strong>Read messages</strong><small>{{ stats()?.unreadMessages ?? 0 }} unread</small></span></button>
+              <button type="button" class="qa" (click)="go('settings')"><mat-icon>call</mat-icon><span><strong>Phone & social links</strong><small>WhatsApp, Instagram, TikTok…</small></span></button>
+            </section>
+          </div>
+        }
+
+        <!-- ============ BOOKINGS ============ -->
+        @case ('bookings') {
+          <div class="toolbar">
+            <div class="seg" role="tablist" aria-label="Filter bookings">
+              @for (f of filters; track f.id) {
+                <button type="button" role="tab" [class.on]="statusFilter() === f.id" [attr.aria-selected]="statusFilter() === f.id" (click)="statusFilter.set(f.id)">
+                  {{ f.label }} <em>{{ countFor(f.id) }}</em>
+                </button>
+              }
+            </div>
+            <label class="search">
+              <mat-icon>search</mat-icon>
+              <input type="search" placeholder="Search name, reference, phone, car…" [ngModel]="search()" (ngModelChange)="search.set($event)" aria-label="Search bookings" />
+            </label>
+          </div>
+
+          <section class="card table-card">
+            <table mat-table [dataSource]="ds" matSort matSortActive="pickup" matSortDirection="asc">
+              <ng-container matColumnDef="ref"><th mat-header-cell *matHeaderCellDef mat-sort-header>Reference</th><td mat-cell *matCellDef="let b"><span class="ref">{{ b.ref }}</span></td></ng-container>
+              <ng-container matColumnDef="customer"><th mat-header-cell *matHeaderCellDef mat-sort-header>Customer</th><td mat-cell *matCellDef="let b"><span class="who"><span class="avatar">{{ initials(b.customer.name) }}</span><span><strong>{{ b.customer.name }}</strong><small>{{ b.customer.country }}</small></span></span></td></ng-container>
+              <ng-container matColumnDef="car"><th mat-header-cell *matHeaderCellDef mat-sort-header>Car</th><td mat-cell *matCellDef="let b">{{ b.carName }}</td></ng-container>
+              <ng-container matColumnDef="pickup"><th mat-header-cell *matHeaderCellDef mat-sort-header>Pickup</th><td mat-cell *matCellDef="let b"><strong class="dt">{{ b.pickupAt | date: 'd MMM, HH:mm' }}</strong><small class="muted block">{{ loc(b.pickupLocation) }}</small></td></ng-container>
+              <ng-container matColumnDef="return"><th mat-header-cell *matHeaderCellDef mat-sort-header>Return</th><td mat-cell *matCellDef="let b"><span class="dt">{{ b.returnAt | date: 'd MMM, HH:mm' }}</span><small class="muted block">{{ b.quote.days }} days</small></td></ng-container>
+              <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef mat-sort-header class="num">Total</th><td mat-cell *matCellDef="let b" class="num"><strong>{{ b.quote.total | usd }}</strong></td></ng-container>
+              <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th><td mat-cell *matCellDef="let b"><span class="status status--{{ b.status }}">{{ b.status }}</span>@if (attention(b); as a) {<span class="attn"><mat-icon>error</mat-icon>{{ a }}</span>}</td></ng-container>
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let b" (click)="$event.stopPropagation()">
+                  <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Change status"><mat-icon>more_horiz</mat-icon></button>
+                  <mat-menu #menu="matMenu">
+                    @for (s of statuses; track s) {
+                      <button mat-menu-item [disabled]="b.status === s" (click)="setStatus(b, s)"><span class="dot dot--{{ s }}"></span> Mark {{ s }}</button>
+                    }
+                  </mat-menu>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="cols; sticky: true"></tr>
+              <tr mat-row *matRowDef="let b; columns: cols" (click)="openBooking(b)" [class.sel]="selected()?.id === b.id"></tr>
+              <tr class="mat-row" *matNoDataRow><td class="mat-cell" [attr.colspan]="cols.length"><div class="empty"><mat-icon>search_off</mat-icon><p>No bookings match.</p></div></td></tr>
+            </table>
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" pageSize="10" showFirstLastButtons />
+          </section>
+        }
+
+        <!-- ============ MESSAGES ============ -->
+        @case ('messages') {
+          <section class="card inbox">
+            @for (m of messages(); track m.id) {
+              <article class="mail" [class.unread]="!m.read">
+                <span class="avatar">{{ initials(m.name) }}</span>
+                <div class="mail-body">
+                  <header><strong>{{ m.name }}</strong><small>{{ m.createdAt | date: 'd MMM y, HH:mm' }}</small></header>
+                  <small class="muted">{{ m.email }}{{ m.phone ? ' · ' + m.phone : '' }}</small>
+                  <p>{{ m.message }}</p>
+                  <div class="mail-actions">
+                    <a mat-flat-button class="btn-lagoon" [href]="'mailto:' + m.email + '?subject=Re: your message to Kibabu Cars'"><mat-icon>reply</mat-icon> Reply by email</a>
+                    @if (m.phone) { <a mat-stroked-button [href]="wa(m.phone, 'Hello ' + m.name + ', this is Kibabu Cars Zanzibar. ')" target="_blank" rel="noopener"><mat-icon>chat</mat-icon> WhatsApp</a> }
+                    <button mat-button (click)="toggleRead(m)">{{ m.read ? 'Mark unread' : 'Mark as read' }}</button>
+                  </div>
+                </div>
+              </article>
+            } @empty {
+              <div class="empty big"><mat-icon>mark_email_read</mat-icon><p>No messages yet. Messages from the contact page appear here.</p></div>
+            }
+          </section>
+        }
+
+        @case ('cars') { <section class="card pad"><kb-cars-editor /></section> }
+        @case ('blog') { <section class="card pad"><kb-blog-editor /></section> }
+        @case ('faq') { <section class="card pad"><kb-faq-editor /></section> }
+        @case ('about') { <section class="card pad"><kb-about-editor /></section> }
+        @case ('addons') { <section class="card pad"><kb-addons-editor /></section> }
+        @case ('redirects') { <section class="card pad"><kb-redirects-editor /></section> }
+        @case ('settings') { <section class="card pad"><kb-settings-editor /></section> }
+        @case ('email') { <kb-email-settings /> }
+      }
+    </main>
+  </div>
+
+  <!-- ============ BOOKING DRAWER ============ -->
+  @if (selected(); as b) {
+    <button type="button" class="drawer-scrim" aria-label="Close booking" (click)="selected.set(null)"></button>
+    <aside class="drawer" role="dialog" aria-modal="true" [attr.aria-label]="'Booking ' + b.ref">
+      <header class="dr-head">
+        <div>
+          <small class="muted">Booking</small>
+          <h2>{{ b.ref }} <span class="status status--{{ b.status }}">{{ b.status }}</span>@if (attention(b); as a) {<span class="attn"><mat-icon>error</mat-icon>{{ a }}</span>}</h2>
+          <small class="muted">Booked {{ b.createdAt | date: 'd MMM y, HH:mm' }}</small>
+        </div>
+        <button type="button" class="icon-btn" (click)="selected.set(null)" aria-label="Close"><mat-icon>close</mat-icon></button>
+      </header>
+
+      <div class="dr-body">
+        <div class="dr-actions">
+          @if (b.status === 'pending') { <button mat-flat-button class="btn-lagoon" (click)="setStatus(b, 'confirmed')"><mat-icon>check</mat-icon> Confirm</button> }
+          @if (b.status === 'confirmed') { <button mat-flat-button class="btn-lagoon" (click)="setStatus(b, 'active')"><mat-icon>key</mat-icon> Car handed over</button> }
+          @if (b.status === 'active') { <button mat-flat-button class="btn-lagoon" (click)="setStatus(b, 'completed')"><mat-icon>assignment_turned_in</mat-icon> Car returned</button> }
+          <a mat-flat-button class="btn-wa" [href]="confirmMsg(b)" target="_blank" rel="noopener"><mat-icon>chat</mat-icon> WhatsApp</a>
+          <a mat-stroked-button [href]="'mailto:' + b.customer.email + '?subject=Your Kibabu Cars booking ' + b.ref"><mat-icon>mail</mat-icon> Email</a>
+          <button mat-stroked-button [matMenuTriggerFor]="more"><mat-icon>more_horiz</mat-icon> Status</button>
+          <mat-menu #more="matMenu">
+            @for (s of statuses; track s) { <button mat-menu-item [disabled]="b.status === s" (click)="setStatus(b, s)"><span class="dot dot--{{ s }}"></span> Mark {{ s }}</button> }
+          </mat-menu>
+        </div>
+
+        <section class="dr-sec">
+          <h3>Customer</h3>
+          <div class="who big"><span class="avatar">{{ initials(b.customer.name) }}</span><span><strong>{{ b.customer.name }}</strong><small>{{ b.customer.country }}{{ b.lang && b.lang !== 'en' ? ' · booked in ' + langName(b.lang) : '' }}</small></span></div>
+          <dl class="kv">
+            <dt>Phone</dt><dd><a [href]="'tel:' + b.customer.phone">{{ b.customer.phone }}</a></dd>
+            <dt>Email</dt><dd><a [href]="'mailto:' + b.customer.email">{{ b.customer.email }}</a></dd>
+            @if (b.passportNumber) { <dt>Passport</dt><dd>{{ b.passportNumber }}</dd> }
+          </dl>
+        </section>
+
+        <section class="dr-sec">
+          <h3>Trip</h3>
+          <div class="trip">
+            <div><small>Pickup</small><strong>{{ b.pickupAt | date: 'EEE d MMM, HH:mm' }}</strong><span>{{ loc(b.pickupLocation) }}</span></div>
+            <mat-icon>arrow_forward</mat-icon>
+            <div><small>Return</small><strong>{{ b.returnAt | date: 'EEE d MMM, HH:mm' }}</strong><span>{{ loc(b.returnLocation) }}</span></div>
+          </div>
+          <dl class="kv">
+            <dt>Car</dt><dd>{{ b.carName }}</dd>
+            @if (b.pickupDetails) { <dt>{{ b.pickupLocation === 'airport' || b.returnLocation === 'airport' ? 'Flight' : 'Hotel' }}</dt><dd>{{ b.pickupDetails }}</dd> }
+            <dt>Drivers</dt><dd>{{ b.drivers }}</dd>
+            <dt>Extras</dt><dd>{{ extrasText(b) || 'None' }}</dd>
+            @if (b.notes) { <dt>Customer note</dt><dd>{{ b.notes }}</dd> }
+          </dl>
+        </section>
+
+        <section class="dr-sec">
+          <h3>Payment</h3>
+          <ul class="lines">
+            @for (l of b.quote.lines; track $index) { <li [class.minus]="l.amount < 0"><span>{{ l.label }}</span><span>{{ l.amount < 0 ? '−' : '' }}{{ abs(l.amount) | usd }}</span></li> }
+            <li class="tot"><span>Total</span><span>{{ b.quote.total | usd }}</span></li>
+          </ul>
+          <div class="split">
+            <div class="now"><small>Deposit (50%)</small><strong>{{ (b.quote.deposit ?? b.quote.total / 2) | usd }}</strong></div>
+            <div><small>On delivery (50%)</small><strong>{{ (b.quote.balance ?? b.quote.total / 2) | usd }}</strong></div>
+          </div>
+        </section>
+
+        <section class="dr-sec">
+          <h3>Internal note</h3>
+          <textarea class="note" rows="3" [(ngModel)]="note" placeholder="Only staff see this, e.g. “Deposit received by M-Pesa”"></textarea>
+          <button mat-stroked-button (click)="saveNote(b)"><mat-icon>save</mat-icon> Save note</button>
+        </section>
+      </div>
+    </aside>
+  }
+</div>

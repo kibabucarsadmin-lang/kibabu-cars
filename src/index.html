@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Kibabu Cars Zanzibar | Car Rental from $25/day – Free Airport Delivery</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Rent a car in Zanzibar with Kibabu Cars. 4x4s, SUVs and family vans from $25/day with insurance, unlimited km, free airport & Stone Town delivery and 24/7 WhatsApp support." />
+    <meta name="theme-color" content="#06323d" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="preload" href="logo-badge.png" as="image" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+
+
+
+  </head>
+  <body>
+    <app-root>
+      <!-- First-load loader (shown until the app draws the page; server-rendered pages replace it straight away) -->
+      <style>
+        .kbl{position:fixed;inset:0;display:grid;place-items:center;background:#f3fbfa;z-index:9999;font-family:system-ui,sans-serif}
+        .kbl-in{display:flex;flex-direction:column;align-items:center;gap:14px;color:#06323d}
+        .kbl-in b{font-size:15px;letter-spacing:.02em;font-weight:700}
+        .kbl-in small{color:#5b7378;font-size:13px}
+        .kbl-car{animation:kbl-bounce .5s ease-in-out infinite}
+        .kbl-w{animation:kbl-spin .5s linear infinite}
+        .kbl-road{stroke:#ffc53d;stroke-width:3;stroke-linecap:round;stroke-dasharray:12 10;animation:kbl-road .5s linear infinite}
+        .kbl-sp line{stroke:#00a6a6;stroke-width:3;stroke-linecap:round;animation:kbl-sp .6s ease-in-out infinite}
+        .kbl-sp line:nth-child(2){animation-delay:.15s}.kbl-sp line:nth-child(3){animation-delay:.3s}
+        @keyframes kbl-spin{to{transform:rotate(360deg)}}
+        @keyframes kbl-bounce{50%{transform:translateY(-1.6px)}}
+        @keyframes kbl-road{to{stroke-dashoffset:22}}
+        @keyframes kbl-sp{0%,100%{opacity:0;transform:translateX(6px)}50%{opacity:1;transform:none}}
+        @media (prefers-reduced-motion:reduce){.kbl-car,.kbl-w,.kbl-road,.kbl-sp line{animation:none}}
+      </style>
+      <div class="kbl" role="status" aria-label="Loading">
+        <div class="kbl-in">
+          <svg width="150" height="93" viewBox="0 0 120 74" aria-hidden="true" style="overflow:visible">
+            <g class="kbl-sp"><line x1="4" y1="30" x2="20" y2="30"/><line x1="0" y1="40" x2="14" y2="40"/><line x1="8" y1="50" x2="20" y2="50"/></g>
+            <g class="kbl-car">
+              <rect x="40" y="12" width="34" height="3" rx="1.5" fill="#f5a800"/>
+              <path d="M34 36 L42 18 Q44 15 48 15 L74 15 Q78 15 80 18 L88 36 Z" fill="#06323d"/>
+              <path d="M45 20 L50 20 L50 34 L40 34 Z M54 20 L60 20 L60 34 L54 34 Z M64 20 L74 20 Q76 20 77 22 L82 34 L64 34 Z" fill="#d4f4f1"/>
+              <path d="M22 38 Q22 34 27 34 L96 34 Q104 34 106 40 L108 50 Q108 54 104 54 L24 54 Q20 54 20 50 Z" fill="#06323d"/>
+              <rect x="98" y="40" width="7" height="4" rx="2" fill="#ffc53d"/><rect x="21" y="40" width="4" height="4" rx="1.5" fill="#ff7a59"/>
+            </g>
+            <g class="kbl-w" style="transform-origin:40px 54px"><circle cx="40" cy="54" r="10" fill="#1d2326"/><circle cx="40" cy="54" r="4.5" fill="#d4f4f1"/><path d="M40 45 V63 M31 54 H49" stroke="#1d2326" stroke-width="2"/></g>
+            <g class="kbl-w" style="transform-origin:88px 54px"><circle cx="88" cy="54" r="10" fill="#1d2326"/><circle cx="88" cy="54" r="4.5" fill="#d4f4f1"/><path d="M88 45 V63 M79 54 H97" stroke="#1d2326" stroke-width="2"/></g>
+            <line x1="0" y1="66" x2="120" y2="66" class="kbl-road"/>
+          </svg>
+          <b>KIBABU CARS</b>
+          <small>Car rental in Zanzibar</small>
+        </div>
+      </div>
+    </app-root>
+    <noscript>Please enable JavaScript to book online, or WhatsApp us on +255 772 755 788.</noscript>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+<!-- top loader: a little car drives along a road while a page or data loads -->
+<div class="kb-busy" [class.on]="busy.active()" role="progressbar" [attr.aria-hidden]="!busy.active()" [attr.aria-label]="'Loading' | t">
+  <span class="kb-road"></span>
+  <kb-car-loader class="kb-runner" [size]="34" [label]="'Loading' | t" />
+</div>
+@if (isAdmin()) {
+  <router-outlet />
+} @else {
+  <a class="skip" href="#main">{{ 'Skip to content' | t }}</a>
+  @if (demo) {
+    <div class="demo">{{ 'Preview version: bookings made here are only for testing and are not sent to Kibabu Cars.' | t }} <a routerLink="/admin">{{ 'Staff login' | t }}</a></div>
+  }
+
+  <header class="header" [class.scrolled]="scrolled()" [class.tucked]="hidden() && !menuOpen()">
+    <div class="wrap header-in">
+      <a routerLink="/" class="brand" [attr.aria-label]="'Kibabu Cars, home' | t"><kb-logo class="on-light" /></a>
+
+      <nav class="nav" [attr.aria-label]="'Main' | t">
+        <div class="item" (mouseenter)="openMenu('cars')" (mouseleave)="closeSoon()">
+          <button type="button" class="top" [class.on]="inCars()" [attr.aria-expanded]="dropdown() === 'cars'" aria-controls="menu-cars" (click)="toggle('cars')">
+            {{ 'Cars & prices' | t }} <mat-icon class="caret">expand_more</mat-icon>
+          </button>
+          @if (dropdown() === 'cars') {
+            <div class="panel cars-panel" id="menu-cars" (mouseenter)="openMenu('cars')" (mouseleave)="closeSoon()">
+              <div class="types">
+                <p class="panel-label">{{ 'Browse by type' | t }}</p>
+                @for (t of types; track t.id) {
+                  <a [routerLink]="['/fleet']" [queryParams]="{ type: t.id }"><strong>{{ t.label | t }}</strong><small>{{ t.hint | t }}</small></a>
+                }
+                <a routerLink="/fleet" class="all">{{ 'All cars' | t }} <mat-icon>arrow_forward</mat-icon></a>
+              </div>
+              <div class="cars-grid">
+                @for (c of menuCars(); track c.id) {
+                  <a class="mcar" [routerLink]="['/fleet', c.id]">
+                    <span class="mcar-img">@if (c.image) { <img [src]="c.image" [alt]="c.name" loading="lazy" /> }</span>
+                    <span class="mcar-name">{{ c.name }}</span>
+                    <span class="mcar-price">{{ 'from {price}/day' | t: { price: '$' + c.pricePerDay } }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="item" (mouseenter)="openMenu('plan')" (mouseleave)="closeSoon()">
+          <button type="button" class="top" [class.on]="inPlan()" [attr.aria-expanded]="dropdown() === 'plan'" aria-controls="menu-plan" (click)="toggle('plan')">
+            {{ 'Plan your trip' | t }} <mat-icon class="caret">expand_more</mat-icon>
+          </button>
+          @if (dropdown() === 'plan') {
+            <div class="panel plan-panel" id="menu-plan" (mouseenter)="openMenu('plan')" (mouseleave)="closeSoon()">
+              <div class="plan-links">
+                @for (l of planLinks(); track l.title) {
+                  <a [routerLink]="l.path" [fragment]="l.fragment">
+                    <span class="pi"><mat-icon>{{ l.icon }}</mat-icon></span>
+                    <span><strong>{{ l.title | t }}</strong><small>{{ l.text | t }}</small></span>
+                  </a>
+                }
+              </div>
+              @if (latestPost(); as p) {
+                <a class="feature" [routerLink]="['/blog', p.slug]">
+                  <span class="f-img">@if (p.cover.src) { <img [src]="p.cover.src" [alt]="p.cover.alt" loading="lazy" /> }</span>
+                  <span class="f-label">{{ 'From the blog' | t }}</span>
+                  <strong>{{ p.title }}</strong>
+                </a>
+              }
+            </div>
+          }
+        </div>
+
+        <a class="top" routerLink="/about" routerLinkActive="on">{{ 'About' | t }}</a>
+        <a class="top" routerLink="/contact" routerLinkActive="on">{{ 'Contact' | t }}</a>
+      </nav>
+
+      <div class="actions">
+        <div class="item lang" (mouseenter)="openMenu('lang')" (mouseleave)="closeSoon()">
+          <button type="button" class="top lang-btn" [attr.aria-expanded]="dropdown() === 'lang'" aria-controls="menu-lang" (click)="toggle('lang')" [attr.aria-label]="('Language' | t) + ': ' + langName">
+            <kb-flag [lang]="i18n.lang" /><mat-icon class="caret">expand_more</mat-icon>
+          </button>
+          @if (dropdown() === 'lang') {
+            <div class="panel lang-panel" id="menu-lang" (mouseenter)="openMenu('lang')" (mouseleave)="closeSoon()">
+              @for (l of langs; track l.id) {
+                <a [href]="langHref(l.id)" [attr.hreflang]="l.id" [attr.lang]="l.id" [attr.aria-label]="l.name" [title]="l.name" [class.on]="l.id === i18n.lang" [attr.aria-current]="l.id === i18n.lang ? 'true' : null" (click)="pickLang(l.id, $event)">
+                  <kb-flag [lang]="l.id" />
+                </a>
+              }
+            </div>
+          }
+        </div>
+        <a class="phone" [href]="tel" [attr.aria-label]="'Call us' | t"><span class="ring"><mat-icon>call</mat-icon></span><span class="num"><small>{{ 'Open 24/7' | t }}</small>{{ b.phone }}</span></a>
+        @if (!isBooking()) {
+          <a class="book" routerLink="/book">{{ 'Book a car' | t }} <mat-icon>arrow_forward</mat-icon></a>
+        }
+        <button class="burger" type="button" [attr.aria-label]="(menuOpen() ? 'Close menu' : 'Open menu') | t" [attr.aria-expanded]="menuOpen()" aria-controls="mobile-menu" (click)="menuOpen.set(!menuOpen())" [class.x]="menuOpen()">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="sheet" id="mobile-menu" [class.open]="menuOpen()" [attr.aria-hidden]="!menuOpen()" [attr.inert]="menuOpen() ? null : ''" role="dialog" aria-modal="true" [attr.aria-label]="'Menu' | t" [cdkTrapFocus]="menuOpen()">
+    <div class="sheet-in">
+      <nav class="m-nav" [attr.aria-label]="'Mobile' | t">
+        <a routerLink="/" routerLinkActive="on" [routerLinkActiveOptions]="{ exact: true }" style="--i: 0">{{ 'Home' | t }}</a>
+        <a routerLink="/fleet" routerLinkActive="on" style="--i: 1">{{ 'Cars & prices' | t }}</a>
+        <a routerLink="/blog" routerLinkActive="on" style="--i: 2">{{ 'Travel blog' | t }}</a>
+        <a routerLink="/faq" routerLinkActive="on" style="--i: 3">{{ 'Questions' | t }}</a>
+        <a routerLink="/about" routerLinkActive="on" style="--i: 4">{{ 'About us' | t }}</a>
+        <a routerLink="/contact" routerLinkActive="on" style="--i: 5">{{ 'Contact' | t }}</a>
+      </nav>
+      <p class="m-label">{{ 'Popular cars' | t }}</p>
+      <div class="m-cars">
+        @for (c of menuCars(); track c.id) {
+          <a [routerLink]="['/fleet', c.id]" class="m-car">
+            <span class="m-car-img">@if (c.image) { <img [src]="c.image" [alt]="c.name" loading="lazy" /> }</span>
+            <strong>{{ c.name }}</strong><small>{{ 'from {price}/day' | t: { price: '$' + c.pricePerDay } }}</small>
+          </a>
+        }
+      </div>
+      <a class="m-find" routerLink="/my-booking"><mat-icon>confirmation_number</mat-icon> {{ 'Find my booking' | t }}</a>
+      <div class="m-contact">
+        <a class="m-wa" [href]="wa" target="_blank" rel="noopener"><mat-icon>chat</mat-icon> {{ 'WhatsApp' | t }}</a>
+        <a class="m-call" [href]="tel"><mat-icon>call</mat-icon> {{ 'Call' | t }}</a>
+      </div>
+      <p class="m-label">{{ 'Language' | t }}</p>
+      <div class="m-langs">
+        @for (l of langs; track l.id) {
+          <a [href]="langHref(l.id)" [attr.hreflang]="l.id" [attr.lang]="l.id" [attr.aria-label]="l.name" [title]="l.name" [class.on]="l.id === i18n.lang" [attr.aria-current]="l.id === i18n.lang ? 'true' : null" (click)="pickLang(l.id, $event)"><kb-flag [lang]="l.id" /></a>
+        }
+      </div>
+      <p class="m-note">{{ b.phone }}, {{ b.email }}<br />{{ 'Open day and night.' | t }}</p>
+    </div>
+  </div>
+
+  <main id="main"><router-outlet /></main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="foot-top">
+        <div class="foot-brand">
+          <kb-logo [size]="64" />
+          <p>{{ 'A family-run car hire in Stone Town. We’ve been handing over keys at Zanzibar airport since {year}.' | t: { year: year - b.stats.years } }}</p>
+        </div>
+        <div class="foot-cols">
+          <div>
+            <h4>{{ 'Rent' | t }}</h4>
+            <a routerLink="/fleet">{{ 'Cars & prices' | t }}</a>
+            <a routerLink="/book">{{ 'Book online' | t }}</a>
+            <a routerLink="/my-booking">{{ 'Find my booking' | t }}</a>
+          </div>
+          <div>
+            <h4>{{ 'Before you drive' | t }}</h4>
+            <a routerLink="/blog">{{ 'Blog and travel tips' | t }}</a>
+            <a routerLink="/faq" fragment="permit">{{ 'Zanzibar driving permit' | t }}</a>
+            <a routerLink="/faq" fragment="included">{{ 'What the price includes' | t }}</a>
+            <a routerLink="/terms">{{ 'Rental terms' | t }}</a>
+            <a routerLink="/terms" fragment="privacy">{{ 'Privacy' | t }}</a>
+          </div>
+          <div>
+            <h4>{{ 'Talk to us' | t }}</h4>
+            <a [href]="wa" target="_blank" rel="noopener">{{ 'WhatsApp' | t }}</a>
+            <a [href]="tel">{{ b.phone }}</a>
+            <a [href]="'mailto:' + b.email">{{ b.email }}</a>
+          </div>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© {{ year }} {{ b.name }}, {{ b.poBox }}</span>
+        <span class="links">
+          @if (b.tripadvisor) { <a [href]="b.tripadvisor" target="_blank" rel="noopener">{{ 'Tripadvisor' | t }}</a> }
+          @if (b.facebook) { <a [href]="b.facebook" target="_blank" rel="noopener">{{ 'Facebook' | t }}</a> }
+          @if (b.instagram) { <a [href]="b.instagram" target="_blank" rel="noopener">{{ 'Instagram' | t }}</a> }
+          @if (b.tiktok) { <a [href]="b.tiktok" target="_blank" rel="noopener">{{ 'TikTok' | t }}</a> }
+          @if (analytics.enabled()) { <button type="button" class="linkish" (click)="analytics.openSettings()">{{ 'Cookie settings' | t }}</button> }
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  @if (!isBooking()) {
+    <div class="mbar" role="region" [attr.aria-label]="'Quick actions' | t">
+      <a mat-flat-button class="btn-sun btn-lg" routerLink="/book">{{ 'Book a car' | t }}</a>
+      <a mat-flat-button class="btn-wa btn-lg wa" [href]="wa" target="_blank" rel="noopener" [attr.aria-label]="'Chat on WhatsApp' | t">
+        <svg viewBox="0 0 32 32" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4a10.5 10.5 0 0 1-1.7-5.7C5.1 10 10 5.2 16 5.2S26.9 10 26.9 15.8 22 26.4 16 26.4zm6-7.9c-.3-.2-1.9-1-2.2-1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1a8.8 8.8 0 0 1-4.4-3.8c-.3-.6.3-.5 1-1.7.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.2 1.4 3.5c.2.2 2.4 3.6 5.8 5 2.2.9 3 1 4.1.8.7-.1 1.9-.8 2.2-1.5.3-.8.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg>
+        {{ 'WhatsApp' | t }}
+      </a>
+    </div>
+  }
+}
+
+@if (analytics.banner()) {
+  <div class="cookie" role="dialog" aria-live="polite" [attr.aria-label]="'Cookie settings' | t">
+    <p>{{ 'We use cookies from Google to see which pages and ads bring bookings. The site works fine without them.' | t }}
+      <a routerLink="/terms" fragment="privacy">{{ 'Privacy' | t }}</a></p>
+    <div class="cookie-btns">
+      <button mat-stroked-button type="button" (click)="analytics.decline()">{{ 'Only necessary' | t }}</button>
+      <button mat-flat-button type="button" class="accept" (click)="analytics.accept()">{{ 'Accept' | t }}</button>
+    </div>
+  </div>
+}

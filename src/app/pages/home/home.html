@@ -1,0 +1,127 @@
+<section class="hero">
+  <div class="media" aria-hidden="true">
+    @for (p of flyover; track p; let i = $index) {
+      <img class="shot" [src]="p" alt="" [style.--i]="i" [attr.fetchpriority]="i === 0 ? 'high' : null" [attr.loading]="i === 0 ? null : 'lazy'" width="1024" height="683" />
+    }
+    @if (videoOn()) {
+      <video #vid class="vid" [class.on]="playing()" [src]="b.heroVideo" autoplay muted loop playsinline preload="auto"
+             (error)="videoFailed.set(true)" (loadedmetadata)="vid.muted = true; vid.play().catch(noop)" (playing)="playing.set(true)"></video>
+    }
+  </div>
+  <div class="shade" aria-hidden="true"></div>
+  <div class="wrap hero-in">
+    <p class="kicker h-in">{{ 'Self-drive car hire in Zanzibar' | t }}</p>
+    <h1 [attr.aria-label]="headline">
+      @for (w of headlineWords; track $index) {
+        <span class="w" aria-hidden="true"><span [style.--d]="$index">{{ w }}</span></span>{{ ' ' }}
+      }
+    </h1>
+    <p class="lead h-in d2">{{ 'From {price} a day with insurance, unlimited kilometres and free delivery to the airport or Stone Town.' | t: { price: '$' + fleet.cheapest() } }}</p>
+    <div class="ctas h-in d3">
+      <a mat-flat-button class="btn-sun btn-lg" routerLink="/fleet">{{ 'See cars and prices' | t }}</a>
+      <a mat-stroked-button class="btn-lg ghost" [href]="wa" target="_blank" rel="noopener"><mat-icon>chat</mat-icon>{{ 'Chat on WhatsApp' | t }}</a>
+    </div>
+    <div class="proof h-in d4">
+      <span><span class="star" aria-hidden="true">★</span> <strong>{{ b.tripadvisorRating }}</strong> {{ 'on Tripadvisor' | t }}</span>
+      <span class="sep" aria-hidden="true"></span>
+      <span><strong>{{ b.stats.rentals | number }}+</strong> {{ 'rentals since {year}' | t: { year: since } }}</span>
+    </div>
+  </div>
+  <kb-waves />
+</section>
+
+<div class="wrap search-dock">
+  <div class="search-panel h-in d4">
+    <kb-quick-search />
+  </div>
+</div>
+
+<section class="band included">
+  <div class="wrap inc-grid">
+    <div class="inc-head" kbReveal>
+      <h2>{{ 'One price, nothing to add at the desk.' | t }}</h2>
+      <p class="lede">{{ 'The daily rate is what you pay. The only extra most guests need is the Zanzibar driving permit, which we arrange for you.' | t }}</p>
+      <a class="link" routerLink="/faq" fragment="included">{{ 'Read what isn’t covered' | t }}</a>
+    </div>
+    <ul class="inc-list">
+      @for (i of included; track i.t; let n = $index) {
+        <li kbReveal [delay]="n * 60">
+          <mat-icon aria-hidden="true">{{ i.i }}</mat-icon>
+          <div><strong>{{ i.t | t }}</strong><span>{{ i.d | t }}</span></div>
+        </li>
+      }
+    </ul>
+  </div>
+</section>
+
+<section class="band fleet-band">
+  <div class="wrap">
+    <div class="row-head" kbReveal>
+      <div>
+        <h2>{{ 'Cars made for island roads.' | t }}</h2>
+        <p class="lede">{{ 'All automatic, all air-conditioned. Most are 4x4, for the sandy tracks to the quieter beaches.' | t }}</p>
+      </div>
+      <a mat-stroked-button class="btn-lg" routerLink="/fleet">{{ 'All cars and prices' | t }}</a>
+    </div>
+    <div class="rail">
+      @for (car of fleet.featured().slice(0, 6); track car.id; let n = $index) {
+        <kb-car-card [car]="car" kbReveal="drive" [delay]="(n % 3) * 110" />
+      }
+    </div>
+  </div>
+</section>
+
+<section class="band band--dark arrive">
+  <div class="wrap arrive-grid">
+    <div>
+      <h2 kbReveal>{{ 'From booking to driving in three steps.' | t }}</h2>
+      <div class="steps-wrap" #road [style.--p]="roadP()">
+      <span class="road" aria-hidden="true"><span class="road-car"><mat-icon>directions_car</mat-icon></span></span>
+      <ol class="steps">
+        @for (s of steps; track s.t; let i = $index) {
+          <li [class.lit]="roadP() >= i / (steps.length - 1) - 0.03">
+            <span class="n">{{ i + 1 }}</span>
+            <div><h3>{{ s.t | t }}</h3><p>{{ s.d | t: s.p }}</p></div>
+          </li>
+        }
+      </ol>
+      </div>
+      <a mat-flat-button class="btn-sun btn-lg" routerLink="/book">{{ 'Start a booking' | t }}</a>
+    </div>
+    <div class="arrive-frame" kbReveal>
+      <kb-photo class="arrive-img" [style.--shift]="shift()" [src]="photos.stoneTown.src" [fallbackSrc]="photos.stoneTown.fallback" [alt]="'Stone Town, Zanzibar' | t" />
+    </div>
+  </div>
+</section>
+
+<section class="band estimate">
+  <div class="wrap">
+    <div class="section-head" kbReveal>
+      <h2>{{ 'What will your trip cost?' | t }}</h2>
+      <p>{{ 'Pick a car and drag the slider. The total includes insurance and airport delivery.' | t }}</p>
+    </div>
+    <kb-estimator kbReveal />
+  </div>
+</section>
+
+<section class="band drives">
+  <div class="wrap">
+    <div class="section-head" kbReveal>
+      <h2>{{ 'The island is an easy drive.' | t }}</h2>
+      <p>{{ 'Roads between the main towns are paved and quiet. Tap a place to see the drive from Stone Town.' | t }}</p>
+    </div>
+    <kb-island-map kbReveal />
+  </div>
+</section>
+
+<section class="ocean" #ocean>
+  <kb-photo class="ocean-img" [style.--shift]="oceanShift()" [src]="photos.beach.src" [fallbackSrc]="photos.beach.fallback" [alt]="'A quiet Zanzibar beach' | t" fallbackLabel=" " />
+  <div class="ocean-shade"></div>
+  <div class="wrap">
+    <figure kbReveal>
+      <blockquote>{{ '“We had a great experience with Kibabu Cars, including a smooth booking process and a smooth delivery of the car.”' | t }}</blockquote>
+      <figcaption>{{ 'A guest review on kibabucars.com.' | t }} <a [href]="b.tripadvisor" target="_blank" rel="noopener">{{ 'Read more on Tripadvisor' | t }}</a></figcaption>
+      <a mat-flat-button class="btn-sun btn-lg" routerLink="/book">{{ 'Book a car' | t }}</a>
+    </figure>
+  </div>
+</section>

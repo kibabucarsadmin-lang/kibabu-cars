@@ -1,0 +1,337 @@
+@if (booking(); as b) {
+  <!-- ================= CONFIRMATION (fits one phone screen) ================= -->
+  <section class="confirm">
+    <div class="done">
+      <div class="burst" aria-hidden="true">
+        <span class="ring"></span>
+        @for (i of confetti; track i) { <i [style.--a]="i * 30 + 'deg'"></i> }
+        <mat-icon class="tick">check</mat-icon>
+      </div>
+      <h1>{{ 'Booking confirmed' | t }}</h1>
+      <div class="ref">{{ b.ref }}</div>
+      <dl class="facts">
+        <div><dt>{{ 'Car' | t }}</dt><dd>{{ b.carName }}</dd></div>
+        <div><dt>{{ 'Pickup place' | t }}</dt><dd>{{ locLabel(b.pickupLocation) }}</dd></div>
+        <div><dt>{{ 'Return place' | t }}</dt><dd>{{ locLabel(b.returnLocation) }}</dd></div>
+        <div><dt>{{ 'Pickup' | t }}</dt><dd>{{ b.pickupAt | date: 'EEE d MMM, HH:mm' }}</dd></div>
+        <div><dt>{{ 'Return' | t }}</dt><dd>{{ b.returnAt | date: 'EEE d MMM, HH:mm' }}</dd></div>
+        <div class="tot"><dt>{{ 'Total' | t }}</dt><dd>{{ b.quote.total | usd }}<small>{{ 'Pay now {now}, pay later {later}' | t: { now: (b.quote.deposit | usd), later: (b.quote.balance | usd) } }}</small></dd></div>
+      </dl>
+      @if (confirmedExtras(b); as xs) {
+        @if (xs.length) {
+          <details class="xs">
+            <summary><mat-icon>add_circle</mat-icon> {{ 'Extra services' | t }} ({{ xs.length }}) <mat-icon class="chev">expand_more</mat-icon></summary>
+            <ul>@for (x of xs; track x.label) { <li><span>{{ x.label }}</span><strong>{{ x.amount ? (x.amount | usd) : ('Free' | t) }}</strong></li> }</ul>
+          </details>
+        }
+      }
+      <a mat-flat-button class="btn-lg btn-wa wa" [href]="waConfirm(b)" target="_blank" rel="noopener"><mat-icon>chat</mat-icon> {{ 'Send booking on WhatsApp' | t }}</a>
+      <div class="done-links">
+        <a mat-button routerLink="/my-booking" [queryParams]="{ ref: b.ref }">{{ 'Manage booking' | t }}</a>
+        <a mat-button routerLink="/">{{ 'Back to home' | t }}</a>
+      </div>
+    </div>
+  </section>
+} @else {
+  <section class="book-hero">
+    <div class="wrap">
+      <h1>{{ 'Book your car' | t }}</h1>
+    </div>
+  </section>
+
+  <section class="wrap book-layout">
+    <div class="main">
+      <!-- the answers so far: tap one to change it -->
+      <div class="journey">
+        <div class="dots" aria-hidden="true">@for (n of [0, 1, 2, 3, 4]; track n) { <i [class.is-on]="n === stepIdx()" [class.is-done]="n < stepIdx()"></i> }</div>
+        @if (stepIdx() > 0) {
+          <div class="answers">
+            <button type="button" class="ans" (click)="goTo(0)"><mat-icon>{{ placeIcon[tripV().pickupLocation ?? 'airport'] }}</mat-icon>{{ locLabel(tripV().pickupLocation) }}</button>
+            @if (stepIdx() > 1 && period(); as p) {
+              <button type="button" class="ans" (click)="goTo(1)"><mat-icon>event</mat-icon>{{ p.pickupAt | date: 'd MMM' }} → {{ p.returnAt | date: 'd MMM' }} · {{ '{n} days' | t: { n: days() } }}</button>
+            }
+            @if (stepIdx() > 2 && selectedCar(); as c) {
+              <button type="button" class="ans" (click)="goTo(2)"><mat-icon>directions_car</mat-icon>{{ c.name }}</button>
+            }
+            @if (stepIdx() > 3) {
+              <button type="button" class="ans" (click)="goTo(3)"><mat-icon>add_circle</mat-icon>{{ extrasCount() ? ('{n} extras' | t: { n: extrasCount() }) : ('No extras' | t) }}</button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="panes">
+        @if (stepIdx() === 0) {
+          <div class="pane" [class.back]="dir() < 0" [formGroup]="trip" animate.leave="pane-out">
+            <h2 class="q">{{ 'Where should we bring the car?' | t }}</h2>
+
+            
+            <div class="places" role="radiogroup" [attr.aria-label]="'Pickup location' | t">
+              @for (l of locations; track l.id) {
+                <button type="button" class="place" role="radio" [attr.aria-checked]="tripV().pickupLocation === l.id"
+                  [class.on]="tripV().pickupLocation === l.id" (click)="pickPlace(l.id)">
+                  <mat-icon>{{ placeIcon[l.id] }}</mat-icon>
+                  <span class="p-name">{{ l.label | t }}</span>
+                  
+                  <span class="p-fee" [class.free]="!l.fee">{{ l.fee ? '+$' + l.fee : ('Free' | t) }}</span>
+                </button>
+              }
+            </div>
+            <label class="other-return">
+              <mat-slide-toggle [checked]="showReturn()" (change)="showReturn.set($event.checked)" />
+              <span>{{ 'Return location' | t }}</span>
+            </label>
+            @if (showReturn()) {
+              <mat-form-field class="w-full grow-in">
+                <mat-label>{{ 'Return location' | t }}</mat-label>
+                <mat-select [value]="tripV().returnLocation" (selectionChange)="pickReturn($event.value)">
+                  @for (l of locations; track l.id) { <mat-option [value]="l.id">{{ l.label | t }} {{ l.fee ? '(+$' + l.fee + ')' : ('(free)' | t) }}</mat-option> }
+                </mat-select>
+              </mat-form-field>
+            }
+
+            
+          </div>
+        }
+        @if (stepIdx() === 1) {
+          <div class="pane" [class.back]="dir() < 0" [formGroup]="trip" animate.leave="pane-out">
+            <h2 class="q">{{ 'When do you need it?' | t }}</h2>
+
+            <div class="when">
+              <mat-form-field class="dates">
+                <mat-label>{{ 'Pickup and return dates' | t }}</mat-label>
+                <mat-date-range-input [rangePicker]="rp" [min]="today">
+                  <input matStartDate formControlName="start" [placeholder]="'Pickup' | t" />
+                  <input matEndDate formControlName="end" [placeholder]="'Return' | t" />
+                </mat-date-range-input>
+                <mat-datepicker-toggle matIconSuffix [for]="rp" />
+                <mat-date-range-picker #rp />
+                @if (badDate()) {
+                  <mat-error>{{ 'Type dates like {example}, or choose them in the calendar.' | t: { example: dateExample } }}</mat-error>
+                }
+              </mat-form-field>
+              <mat-form-field class="time">
+                <mat-label>{{ 'Pickup time' | t }}</mat-label>
+                <mat-select formControlName="pickupTime">
+                  @for (t of times; track t) { <mat-option [value]="t">{{ t }}</mat-option> }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field class="time">
+                <mat-label>{{ 'Return time' | t }}</mat-label>
+                <mat-select formControlName="returnTime">
+                  @for (t of times; track t) { <mat-option [value]="t">{{ t }}</mat-option> }
+                </mat-select>
+              </mat-form-field>
+            </div>
+            @if (trip.valid && !period()) {
+              <p class="warn"><mat-icon>error</mat-icon> {{ 'Return must be after pickup.' | t }}</p>
+            }
+
+            
+          </div>
+        }
+        @if (stepIdx() === 2) {
+          <div class="pane" [class.back]="dir() < 0" [formGroup]="trip" animate.leave="pane-out">
+            <h2 class="q">{{ 'Pick your favourite car' | t }}</h2>
+<div class="cars-head" #carsHead>
+              <div class="filters" role="group" [attr.aria-label]="'Filter cars' | t">
+                @for (f of carFilters; track f.id) {
+                  <button type="button" class="chip" [class.on]="carFilter() === f.id" (click)="carFilter.set(f.id)">{{ f.label | t: { price: '$' + budgetPrice } }}</button>
+                }
+              </div>
+            </div>
+            <div class="cars" role="radiogroup" [attr.aria-label]="'Vehicles' | t">
+              @for (c of shownCars(); track c.id) {
+                @let free = isAvailable(c.id);
+                <button type="button" class="car-opt" role="radio"
+                  [attr.aria-checked]="carForm.value.carId === c.id"
+                  [class.selected]="carForm.value.carId === c.id" [class.off]="!free"
+                  [disabled]="!free" (click)="selectCar(c.id)">
+                  <div class="car-img"><kb-photo [src]="c.image" [alt]="c.name" /></div>
+                  <div class="car-info">
+                    <strong>{{ c.name }}</strong>
+                    <span class="specs">
+                      <span><mat-icon>person</mat-icon>{{ c.seats }}</span>
+                      <span><mat-icon>luggage</mat-icon>{{ c.bags }}</span>
+                      @if (c.fourByFour) { <span class="tag">4x4</span> }
+                    </span>
+                    @if (!free) { <span class="full">{{ 'Fully booked for these dates' | t }}</span> }
+                  </div>
+                  <div class="car-price">
+                    @if (carPrices()[c.id]; as total) {
+                      <strong>${{ total }}</strong><small>{{ '{n} days' | t: { n: days() } }}</small>
+                    } @else {
+                      <strong>${{ c.pricePerDay }}</strong><small>{{ '/day' | t }}</small>
+                    }
+                  </div>
+                  <span class="pick" aria-hidden="true"><mat-icon>{{ carForm.value.carId === c.id ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon></span>
+                </button>
+              } @empty {
+                <p class="muted">{{ 'No car matches this filter.' | t }}</p>
+              }
+            </div>
+          
+          </div>
+        }
+        @if (stepIdx() === 3) {
+          <div class="pane" [class.back]="dir() < 0" [formGroup]="driver" animate.leave="pane-out">
+            <h2 class="q">{{ 'Any extras?' | t }}</h2>
+
+            <div class="extra-grid" formGroupName="extras">
+              @for (x of extras; track x.id) {
+                @let on = x.locked || driverV().extras?.[x.id];
+                <button type="button" class="xcard" [class.on]="on" [class.locked]="x.locked" (click)="toggleExtra(x.id, !!x.locked)"
+                  [attr.aria-pressed]="!!on" [disabled]="x.locked">
+                  <span class="x-ic"><mat-icon>{{ x.icon || extraIcon[x.id] || 'add_circle' }}</mat-icon></span>
+                  <span class="x-txt"><strong>{{ x.label | t }}</strong></span>
+                  <span class="x-price">
+                    {{ x.price ? '$' + x.price : ('Free' | t) }}@if (x.price && x.per === 'day') {<small>{{ '/day' | t }}</small>}
+                  </span>
+                  <span class="x-state">@if (x.locked) { {{ 'Required' | t }} } @else { <mat-icon>{{ on ? 'check_circle' : 'add_circle_outline' }}</mat-icon> }</span>
+                </button>
+              }
+            </div>
+
+            <div class="counters">
+              <div class="counter">
+                <span class="x-ic"><mat-icon>group_add</mat-icon></span>
+                <div class="c-txt"><strong>{{ 'Additional drivers' | t }}</strong><small>{{ rules.extraDriverFee ? ('{price} each' | t: { price: '$' + rules.extraDriverFee }) : ('Free' | t) }}</small></div>
+                <div class="stepper-ctl">
+                  <button mat-icon-button type="button" [attr.aria-label]="'Fewer drivers' | t" [disabled]="driverV().extraDrivers! <= 0" (click)="bump('extraDrivers', -1, rules.maxExtraDrivers)"><mat-icon>remove</mat-icon></button>
+                  <span aria-live="polite">{{ driverV().extraDrivers }}</span>
+                  <button mat-icon-button type="button" [attr.aria-label]="'More drivers' | t" [disabled]="driverV().extraDrivers! >= rules.maxExtraDrivers" (click)="bump('extraDrivers', 1, rules.maxExtraDrivers)"><mat-icon>add</mat-icon></button>
+                </div>
+              </div>
+              <div class="counter">
+                <span class="x-ic"><mat-icon>child_care</mat-icon></span>
+                <div class="c-txt"><strong>{{ 'Baby seats' | t }}</strong><small>{{ 'Free' | t }}</small></div>
+                <div class="stepper-ctl">
+                  <button mat-icon-button type="button" [attr.aria-label]="'Fewer seats' | t" [disabled]="driverV().babySeats! <= 0" (click)="bump('babySeats', -1, 3)"><mat-icon>remove</mat-icon></button>
+                  <span aria-live="polite">{{ driverV().babySeats }}</span>
+                  <button mat-icon-button type="button" [attr.aria-label]="'More seats' | t" [disabled]="driverV().babySeats! >= 3" (click)="bump('babySeats', 1, 3)"><mat-icon>add</mat-icon></button>
+                </div>
+              </div>
+            </div>
+          
+          </div>
+        }
+        @if (stepIdx() === 4) {
+          <div class="pane" [class.back]="dir() < 0" animate.leave="pane-out">
+            <h2 class="q">{{ 'Almost done! Who is driving?' | t }}</h2>
+            
+
+            <form [formGroup]="driver" class="form" (ngSubmit)="submit()">
+              <div class="hp" aria-hidden="true"><label>{{ 'Website' | t }} <input formControlName="website" tabindex="-1" autocomplete="off" /></label></div>
+              <mat-form-field>
+                <mat-label>{{ 'Full name' | t }}</mat-label>
+                <input matInput formControlName="name" autocomplete="name" required />
+                <mat-error>{{ 'Please enter your name' | t }}</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>{{ 'WhatsApp number' | t }}</mat-label>
+                <input matInput type="tel" formControlName="phone" autocomplete="tel" placeholder="+255 777 123 456" required />
+                <mat-error>{{ 'Please enter a valid phone number' | t }}</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>{{ 'Email' | t }}</mat-label>
+                <input matInput type="email" formControlName="email" autocomplete="email" required />
+                <mat-error>{{ 'Please enter a valid email' | t }}</mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-label>{{ 'Country' | t }}</mat-label>
+                <input matInput formControlName="country" [matAutocomplete]="countryAc" autocomplete="country-name" />
+                <mat-autocomplete #countryAc="matAutocomplete" [hideSingleSelectionIndicator]="true">
+                  @for (c of countryMatches(); track c) { <mat-option [value]="c">{{ c }}</mat-option> }
+                </mat-autocomplete>
+              </mat-form-field>
+            </form>
+            <p class="terms">{{ 'By booking you accept our' | t }} <a routerLink="/terms" target="_blank">{{ 'rental terms' | t }}</a>.</p>
+            @if (error()) { <p class="warn" role="alert"><mat-icon>error</mat-icon> {{ error() | t }}</p> }
+          
+          </div>
+        }
+      </div>
+      <!-- action bar: always visible (sticks to the bottom on phones) -->
+      <div class="bar" [class.ready]="canNext()">
+        <div class="bar-sum">
+          @if (quote(); as q) {
+            <button type="button" class="bar-total" (click)="sumOpen.set(!sumOpen())" [attr.aria-expanded]="sumOpen()" [attr.aria-label]="'Booking summary' | t">
+              <strong>{{ shownTotal() | usd }}</strong>
+              <small>{{ selectedCar()?.name }} · {{ '{n} days' | t: { n: q.days } }} <mat-icon>{{ sumOpen() ? 'expand_more' : 'expand_less' }}</mat-icon></small>
+            </button>
+            @if (savings() > 0) { <span class="save">{{ 'You save {amount}' | t: { amount: '$' + savings() } }}</span> }
+          } @else {
+            <span class="bar-hint"></span>
+          }
+        </div>
+        <div class="bar-btns">
+          @if (stepIdx() > 0) {
+            <button mat-stroked-button type="button" class="btn-lg back-btn" (click)="goTo(stepIdx() - 1)"><mat-icon>arrow_back</mat-icon>{{ 'Back' | t }}</button>
+          }
+          @if (stepIdx() < 4) {
+            <button mat-flat-button class="btn-lg btn-brass go" type="button" [disabled]="!canNext()" (click)="next()">
+              <span class="long">{{ (stepIdx() === 3 ? (extrasCount() ? 'Continue to your details' : 'No extras, continue') : 'Continue') | t }}</span><span class="short">{{ 'Continue' | t }}</span>
+              <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+            </button>
+          } @else {
+            <button mat-flat-button class="btn-lg btn-sun go" type="button" (click)="submit()" [disabled]="submitting()">
+              @if (submitting()) { <mat-progress-spinner diameter="18" mode="indeterminate" /> {{ 'Sending…' | t }} }
+              @else { <span class="long">{{ 'Confirm booking, {total}' | t: { total: '$' + (quote()?.total ?? 0) } }}</span><span class="short">{{ 'Confirm booking' | t }}</span> }
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- SUMMARY (side panel on desktop, slides up from the bar on phones) -->
+    <aside class="summary" [class.open]="sumOpen()" [attr.aria-label]="'Booking summary' | t">
+      <button type="button" class="sum-close" (click)="sumOpen.set(false)" [attr.aria-label]="'Close' | t"><mat-icon>close</mat-icon></button>
+      @if (selectedCar(); as c) {
+        <div class="sum-car">
+          <kb-photo [src]="c.image" [alt]="c.name" />
+        </div>
+        <h3>{{ c.name }}</h3>
+        <p class="muted">{{ '{seats} seats' | t: { seats: c.seats } }}, {{ (c.transmission | t).toLowerCase() }}{{ c.fourByFour ? ', 4x4' : '' }}</p>
+      } @else {
+        <h3>{{ 'Your booking' | t }}</h3>
+        <p class="muted">{{ 'Choose dates and a car to see your price.' | t }}</p>
+      }
+      @if (period(); as p) {
+        <div class="sum-dates">
+          <div><small>{{ 'Pickup' | t }}</small><strong>{{ p.pickupAt | date: 'EEE d MMM, HH:mm' }}</strong><small>{{ locLabel(tripV().pickupLocation) }}</small></div>
+          <mat-icon>arrow_forward</mat-icon>
+          <div><small>{{ 'Return' | t }}</small><strong>{{ p.returnAt | date: 'EEE d MMM, HH:mm' }}</strong><small>{{ locLabel(tripV().returnLocation) }}</small></div>
+        </div>
+      }
+      @if (quote(); as q) {
+        <ul class="lines">
+          @for (l of q.lines; track l.label) {
+            <li [class.disc]="l.amount < 0"><span>{{ l.t ? (l.t | t: l.p) : l.label }}</span><span>{{ l.amount < 0 ? '-$' + (-l.amount) : l.amount ? '$' + l.amount : ('Free' | t) }}</span></li>
+          }
+          <li><span>{{ 'Insurance, taxes & unlimited km' | t }}</span><span>{{ 'Included' | t }}</span></li>
+        </ul>
+        @for (n of q.notesI18n ?? []; track $index) { <p class="note good"><mat-icon>schedule</mat-icon> {{ n.t | t: n.p }}</p> }
+        @for (w of q.warningsI18n ?? []; track $index) { <p class="note"><mat-icon>info</mat-icon> {{ w.t | t: w.p }}</p> }
+        <div class="total"><span>{{ 'Total' | t }}</span><strong>{{ shownTotal() | usd }}</strong></div>
+        @if (savings() > 0) { <p class="sum-save"><mat-icon>savings</mat-icon> {{ 'You save {amount}' | t: { amount: '$' + savings() } }}</p> }
+        <div class="sum-split now"><span>{{ 'Pay now (50%)' | t }}</span><strong>{{ q.deposit | usd }}</strong></div>
+        <div class="sum-split"><span>{{ 'Pay later on delivery (50%)' | t }}</span><strong>{{ q.balance | usd }}</strong></div>
+      }
+      <ul class="trust">
+        <li><mat-icon>event_available</mat-icon> {{ 'Free cancellation before pickup' | t }}</li>
+        <li><mat-icon>verified_user</mat-icon> {{ 'Insurance and unlimited km included' | t }}</li>
+        <li><mat-icon>chat</mat-icon> {{ 'Help on WhatsApp day and night' | t }}</li>
+      </ul>
+    </aside>
+    @if (sumOpen()) { <div class="sum-scrim" (click)="sumOpen.set(false)" aria-hidden="true"></div> }
+    @if (submitting()) {
+      <div class="reserving" role="status" aria-live="polite">
+        <div class="r-card">
+          <kb-car-loader [size]="150" [label]="'Reserving your car…' | t" />
+          <strong>{{ 'Reserving your car…' | t }}</strong>
+          <span>{{ 'Checking the dates and saving your booking. This takes a few seconds.' | t }}</span>
+        </div>
+      </div>
+    }
+  </section>
+}

@@ -1,0 +1,163 @@
+@use '@angular/material' as mat;
+
+/* ------------------------------------------------------------------
+   Kibabu Cars – "Bright island" tokens
+   Deep sea (dark text/bands), Lagoon (actions), Shallows (tints),
+   Foam (page), Sun (highlights + main call to action).
+   Old token names are kept so every component picks up the new palette.
+------------------------------------------------------------------- */
+:root {
+  --sea: #06323d;
+  --lagoon: #007f86;
+  --lagoon-2: #00a6a6;
+  --shallows: #d4f4f1;
+  --foam: #f3fbfa;
+  --sun: #ffc53d;
+  --sun-deep: #f5a800;
+  --coral: #ff7a59;
+
+  --mangrove: var(--sea);
+  --mangrove-2: #0b4552;
+  --limestone: var(--foam);
+  --paper: #ffffff;
+  --brass: var(--lagoon);    /* buttons & text on light (AA) */
+  --brass-light: var(--sun); /* accents on dark */
+  --ocean: var(--lagoon);
+  --ink: #0f2a31;
+  --muted: #4c6469;
+  --line: #d3e7e5;
+  --wa: #1fa855;
+
+  --serif: 'Bricolage Grotesque Variable', system-ui, sans-serif; /* display */
+  --sans: 'Manrope Variable', system-ui, sans-serif;
+
+  --r-sm: 10px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --max: 1240px;
+  --gutter: clamp(20px, 4vw, 40px);
+  --header-h: 72px;
+  --lift: 0 24px 50px -28px rgba(6, 50, 61, .45);
+}
+
+html {
+  height: 100%;
+  @include mat.theme((
+    color: (primary: mat.$cyan-palette, tertiary: mat.$yellow-palette, theme-type: light),
+    typography: (plain-family: 'Manrope Variable, system-ui, sans-serif', brand-family: 'Manrope Variable, system-ui, sans-serif'),
+    density: 0,
+  ));
+  @include mat.theme-overrides((
+    primary: #007f86,
+    on-primary: #ffffff,
+    primary-container: #d4f4f1,
+    on-primary-container: #06323d,
+    secondary-container: #fff1c9,
+    on-secondary-container: #3d2c00,
+    tertiary: #06323d,
+    surface: #f3fbfa,
+    surface-container-lowest: #ffffff,
+    surface-container-low: #f8fdfc,
+    surface-container: #f3fbfa,
+    surface-container-high: #ffffff,
+    outline: #9fbcbc,
+    outline-variant: #d3e7e5,
+    corner-extra-small: 10px,
+    corner-small: 10px,
+    corner-medium: 14px,
+    corner-large: 22px,
+    corner-full: 999px,
+  ));
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--limestone); color: var(--ink);
+  font-family: var(--sans); font-size: 1rem; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+
+/* Type scale (1.25) */
+h1, h2, h3 { hyphens: manual; overflow-wrap: break-word; font-family: var(--serif); font-weight: 700; font-optical-sizing: auto; font-stretch: 95%; color: inherit; margin: 0 0 .45em; letter-spacing: -0.018em; }
+h1 { font-size: clamp(2.5rem, 6vw, 4.4rem); line-height: 1; font-weight: 800; }
+h2 { font-size: clamp(1.75rem, 3.6vw, 2.6rem); line-height: 1.12; }
+h3 { font-size: 1.3rem; line-height: 1.25; font-weight: 650; letter-spacing: -0.015em; }
+h4 { font-family: var(--sans); font-size: 1rem; font-weight: 700; margin: 0 0 .3em; }
+p { margin: 0 0 1em; max-width: 68ch; }
+a { color: var(--ocean); text-underline-offset: 3px; }
+img { display: block; max-width: 100%; }
+small { font-size: .875rem; }
+
+.wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.band { padding: clamp(56px, 9vw, 112px) 0; }
+.band--paper { background: var(--paper); }
+.band--dark { background: var(--sea); color: #e6f4f4; }
+.band--dark a { color: var(--brass-light); }
+.lede { font-size: 1.15rem; color: var(--muted); max-width: 56ch; }
+.band--dark .lede { color: #b8d6d8; }
+.muted { color: var(--muted); }
+.full-width { width: 100%; }
+
+/* Buttons – square-ish, confident */
+.mat-mdc-button-base { --mat-button-filled-container-shape: 999px; --mat-button-outlined-container-shape: 999px; --mat-button-text-container-shape: 999px; letter-spacing: 0; font-weight: 700; --mat-button-filled-label-text-weight: 800; --mat-button-outlined-label-text-weight: 800; }
+.btn-lg.mat-mdc-button-base { height: 52px; padding: 0 26px; font-size: 1rem; }
+.btn-brass.mat-mdc-unelevated-button:not(:disabled) { background: var(--brass); color: #fff; }
+.btn-brass.mat-mdc-unelevated-button:not(:disabled):hover { background: #006b71; }
+.btn-sun.mat-mdc-unelevated-button:not(:disabled) { background: var(--sun); color: var(--sea); }
+.btn-sun.mat-mdc-unelevated-button:not(:disabled):hover { background: var(--sun-deep); }
+.btn-light.mat-mdc-unelevated-button:not(:disabled) { background: #fff; color: var(--mangrove); }
+.btn-wa.mat-mdc-unelevated-button:not(:disabled) { background: var(--wa); color: #fff; }
+.btn-ghost-light.mat-mdc-outlined-button { color: #fff; border-color: rgba(255,255,255,.45); }
+
+/* Brass studs – the one ornament (Zanzibar door studs) */
+.studs { display: none; }
+.studs i { width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #e9cf9f, #a37a3d 60%, #6d4f22); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+
+/* Status pills (admin + my booking) */
+.status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; text-transform: capitalize; }
+.status--pending { background: #f6ecd6; color: #6b4a12; }
+.status--confirmed { background: #dcebe2; color: #1e5a3a; }
+.status--active { background: #dde8ee; color: #134a63; }
+.status--completed { background: #e8e7e3; color: #4a4a45; }
+.status--cancelled { background: #f6dedb; color: #8f2a1d; }
+
+.mat-icon.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 350, 'GRAD' 0, 'opsz' 24; }
+
+:focus-visible { outline: 3px solid var(--lagoon-2); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+/* Shared page pieces */
+.container { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 var(--gutter); }
+.section { padding: clamp(48px, 7vw, 88px) 0; }
+.section--sand { background: var(--paper); }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-md); }
+.page-hero { position: relative; color: var(--sea); padding: clamp(40px, 7vw, 80px) 0 clamp(72px, 8vw, 104px);
+  background: radial-gradient(420px 320px at 96% -10%, rgba(255,197,61,.7), rgba(255,197,61,0) 70%), linear-gradient(180deg, #dcf6f3 0%, #eefaf9 100%); }
+.page-hero::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: clamp(28px, 4vw, 48px); background: var(--foam);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 48' preserveAspectRatio='none'%3E%3Cpath d='M0 24 Q180 0 360 24 T720 24 T1080 24 T1440 24 V48 H0Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 48' preserveAspectRatio='none'%3E%3Cpath d='M0 24 Q180 0 360 24 T720 24 T1080 24 T1440 24 V48 H0Z'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.page-hero h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); }
+.page-hero p { color: var(--muted); font-size: 1.1rem; max-width: 56ch; margin: 0; }
+.eyebrow { display: block; font-size: .95rem; font-weight: 600; color: var(--brass); margin-bottom: 8px; }
+.page-hero .eyebrow { color: var(--lagoon); }
+.section-head { max-width: 640px; margin-bottom: 36px; }
+.section-head p { color: var(--muted); font-size: 1.1rem; }
+.grid { display: grid; gap: 20px; }
+.grid-3 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--shallows); font-size: .875rem; font-weight: 600; }
+.pill mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--ocean); }
+
+/* Scroll reveal (added in the browser only, see shared/reveal.ts) */
+.rv { transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1); }
+.rv--up:not(.in) { opacity: 0; transform: translateY(28px); }
+.rv--drive:not(.in) { opacity: 0; transform: translateX(80px) skewX(-4deg); }
+
+/* spam trap field: invisible to people, filled by bots */
+.hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+
+/* Signature: rolling lagoon waves (used by kb-waves) */
+::selection { background: var(--sun); color: var(--sea); }
