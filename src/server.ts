@@ -100,7 +100,7 @@ app.use(['/admin', '/api', '/book', '/my-booking', ...['it', 'ru', 'es', 'de'].f
 
 /* ---------- Cheap 404 for bot scans of WordPress/PHP paths ---------- */
 app.use((req, res, next) => {
-  if (/^\/(wp-admin|wp-login|wp-content|wp-includes|xmlrpc)|\.(php|asp|aspx|env|git|sql|bak)(\/|$)/i.test(req.path)) {
+  if (/^\/(wp-admin|wp-login|wp-content(?!\/uploads\/)|wp-includes|xmlrpc)|\.(php|asp|aspx|env|git|sql|bak)(\/|$)/i.test(req.path)) {
     res.status(404).type('text/plain').send('Not found');
     return;
   }
@@ -111,15 +111,24 @@ app.use((req, res, next) => {
 const carIds = new Set(SEED_CARS.map((c) => c.id));
 let redirectSrc: Redirect[] | undefined;
 let redirectMap = new Map<string, string>();
+/** "/product/*" rules: every link starting with /product/ goes to the target. Longest prefix first. */
+let redirectPrefixes: [string, string][] = [];
 function redirectFor(path: string): string | null {
   const list = db.read().content.redirects ?? [];
   if (list !== redirectSrc) { // rebuild only after an admin save
     redirectSrc = list;
-    redirectMap = new Map(list.map((r) => [r.from.toLowerCase(), r.to]));
+    redirectMap = new Map(list.filter((r) => !r.from.endsWith('/*')).map((r) => [r.from.toLowerCase(), r.to]));
+    redirectPrefixes = list.filter((r) => r.from.endsWith('/*'))
+      .map((r): [string, string] => [r.from.slice(0, -1).toLowerCase(), r.to])
+      .sort((a, b) => b[0].length - a[0].length);
   }
   let p = path;
   try { p = decodeURI(path); } catch { /* keep */ }
-  return redirectMap.get(p.toLowerCase()) ?? null;
+  const lower = p.toLowerCase();
+  const exact = redirectMap.get(lower);
+  if (exact) return exact;
+  const hit = redirectPrefixes.find(([prefix]) => lower.startsWith(prefix) && lower.length > prefix.length);
+  return hit ? hit[1] : null;
 }
 app.use((req, res, next) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') return next();

@@ -29,9 +29,42 @@ export interface MissingLink { path: string; hits: number; last: string }
 
 /** Links of the old WordPress site, so Google rankings and bookmarks keep working. */
 export const DEFAULT_REDIRECTS: Redirect[] = [
+  // general pages of the old WordPress site
   ['/rental-list', '/fleet'], ['/rental-grid', '/fleet'], ['/search-new', '/fleet'], ['/car-hire', '/fleet'], ['/rental', '/fleet'],
   ['/about-us', '/about'], ['/contact-us', '/contact'], ['/reviews', '/about'], ['/checkout', '/book'], ['/cart', '/book'],
   ['/my-account', '/my-booking'], ['/privacy-policy', '/terms'], ['/terms-and-conditions', '/terms'], ['/terms-conditions', '/terms'],
+  ['/cars', '/fleet'], ['/car-type', '/fleet'], ['/shop', '/fleet'], ['/gallery', '/fleet'], ['/packages', '/fleet'], ['/listing-list', '/fleet'],
+  ['/zanzibar-car-rental-prices-2026', '/fleet'], ['/car/toyota-noah', '/fleet'],
+  ['/our-team', '/about'], ['/reviews/*', '/about'], ['/register', '/my-booking'], ['/login', '/my-booking'],
+  ['/blog-list', '/blog'], ['/blog-list/*', '/blog'], ['/blog-grid', '/blog'], ['/category/*', '/blog'], ['/feed', '/blog'],
+  ['/car-rental-insurance-in-zanzibar', '/faq'], ['/hidden-car-rental-fees-in-zanzibar', '/faq'],
+  ['/zanzibar-airport-car-rental', '/'], ['/best-car-rental-in-zanzibar', '/'], ['/car-rental-in-paje', '/'], ['/taxi-service', '/'], ['/dreamsrentals-racing', '/'],
+  ['/wp-content/uploads/2026/07/company-policy-8.pdf', '/terms'],
+  ['/sitemap_index.xml', '/sitemap.xml'], ['/page-sitemap.xml', '/sitemap.xml'], ['/post-sitemap.xml', '/sitemap.xml'], ['/wp-sitemap.xml', '/sitemap.xml'],
+  // old car pages → the same car
+  ['/car/toyota-rav4', '/fleet/rav4-5-door'], ['/rental/toyota-rav4-5-door', '/fleet/rav4-5-door'], ['/rav4-rental-zanzibar', '/fleet/rav4-5-door'],
+  ['/car/rav-4-new-model', '/fleet/rav4-new-shape'], ['/car/toyota-rav4-new-model', '/fleet/rav4-new-shape'], ['/rental/toyota-rav4-5-door-new-shape', '/fleet/rav4-new-shape'],
+  ['/car/toyota-rav4-3-special', '/fleet/rav4-3-door'], ['/rental/toyota-rav4-3-door', '/fleet/rav4-3-door'],
+  ['/car/suzuki-escudo', '/fleet/suzuki-escudo'], ['/car/suzuki-escudo-new-model', '/fleet/suzuki-escudo'], ['/rental/suzuki-escudo-5-doors', '/fleet/suzuki-escudo'],
+  ['/car/toyota-harrier', '/fleet/toyota-harrier'], ['/rental/toyota-harrier', '/fleet/toyota-harrier'],
+  ['/car/toyota-land-cruiser-prado', '/fleet/land-cruiser-prado'], ['/rental/toyota-land-cruiser-prado-120', '/fleet/land-cruiser-prado'],
+  ['/rental/toyota-vanguard-5-door', '/fleet/toyota-vanguard'], ['/rental/toyota-alphard', '/fleet/toyota-alphard'],
+  ['/rental/nissan-juke', '/fleet/nissan-juke'], ['/product/nissan-juke', '/fleet/nissan-juke'],
+  ['/car/*', '/fleet'], ['/rental/*', '/fleet'], ['/product/*', '/fleet'],
+  // old blog posts → the closest new guide
+  ['/zanzibar-driving-permit-2026', '/blog/zanzibar-driving-permit'], ['/zanzibar-driving-permit', '/blog/zanzibar-driving-permit'],
+  ['/zanzibar-road-conditions', '/blog/driving-in-zanzibar-tips'], ['/renting-a-car-in-zanzibar', '/blog/driving-in-zanzibar-tips'],
+  ['/is-it-safe-to-drive-in-zanzibar', '/blog/driving-in-zanzibar-tips'], ['/is-it-safe-to-rent-a-car-in-zanzibar', '/blog/driving-in-zanzibar-tips'],
+  ['/renting-a-car-in-zanzibar-vs-taxi', '/blog/driving-in-zanzibar-tips'],
+  ['/driving-in-zanzibar-5-essential-tips-for-renting-a-car-and-exploring-the-island', '/blog/driving-in-zanzibar-tips'],
+  ['/do-you-need-a-4x4-in-zanzibar', '/blog/which-car-for-zanzibar'],
+  ['/best-places-to-visit-in-zanzibar-by-car', '/blog/one-week-zanzibar-road-trip'], ['/best-places-to-visit-zanzibar-by-car', '/blog/one-week-zanzibar-road-trip'],
+  ['/best-places-to-visit-in-zanzibar-car-self-drive-road-trip-guide', '/blog/one-week-zanzibar-road-trip'], ['/best-places-to-visit-in-zanzibar/*', '/blog/one-week-zanzibar-road-trip'],
+  ['/best-places-to-visit-in-by-car', '/blog/one-week-zanzibar-road-trip'],
+  ['/top-7-hidden-beaches-in-zanzibar-you-can-only-reach-by-car', '/blog/one-week-zanzibar-road-trip'],
+  ['/top-7-hidden-beaches-in-zanzibar-can-only-reach-by-car', '/blog/one-week-zanzibar-road-trip'], ['/top-7-hidden-beaches-zanzibar-only-reach-car', '/blog/one-week-zanzibar-road-trip'],
+  ['/explore-zanzibars-beautiful-beaches-with-kibabu-cars', '/blog/one-week-zanzibar-road-trip'],
+  ['/top-5-restaurants-in-zanzibar-with-secure-parking', '/blog'],
 ].map(([from, to]) => ({ from, to }));
 
 /** "https://kibabucars.com/Old-Page/?x=1" → "/Old-Page". Returns '' if it is not a usable path. */

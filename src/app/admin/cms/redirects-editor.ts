@@ -25,7 +25,7 @@ interface Row extends Redirect { key: number }
       <mat-icon class="intro-ic">alt_route</mat-icon>
       <div>
         <p><strong>Send old links to the right page.</strong> When someone opens an address that no longer exists, from Google, the old website, a flyer or a bookmark, they are taken to the page you choose instead of "Page not found".</p>
-        <p class="muted">Google moves the old link's ranking to the new page, so you don't lose visitors.</p>
+        <p class="muted">Google moves the old link's ranking to the new page, so you don't lose visitors. End an old link with <code>/*</code> to send a whole group, e.g. <code>/product/*</code> → <code>/fleet</code>.</p>
       </div>
     </div>
 
@@ -87,7 +87,7 @@ interface Row extends Redirect { key: number }
     } @empty {
       <p class="empty muted">{{ q() ? 'No link matches your search.' : 'No redirects yet. Add one, or pick from "Links that found nothing" when it appears.' }}</p>
     }
-    <p class="muted small foot">{{ rows().length }} redirects. Links to car pages of the old site (/rental/…) are handled automatically.</p>
+    <p class="muted small foot">{{ rows().length }} redirects.</p>
   `,
   styles: `
     :host { display: block; }

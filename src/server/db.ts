@@ -81,6 +81,13 @@ function upgrade(cache: DbShape): DbShape {
   cache.content.faq ??= def.faq;
   cache.content.blog ??= def.blog;
   cache.content.redirects ??= structuredClone(DEFAULT_REDIRECTS);
+  // version 2 of the built-in list (all old WordPress links from Search Console): add the ones not there yet, once
+  const st = (cache.settings ??= {});
+  if ((st.redirectsVersion ?? 1) < 2) {
+    const have = new Set(cache.content.redirects.map((r) => r.from.toLowerCase()));
+    for (const r of DEFAULT_REDIRECTS) if (!have.has(r.from.toLowerCase())) cache.content.redirects.push({ ...r });
+    st.redirectsVersion = 2;
+  }
   cache.content.addons ??= structuredClone(DEFAULT_ADDONS);
   // insurance is described as basic, not comprehensive (FAQ text saved before that change)
   const basic: [string, string][] = [['Comprehensive insurance (', 'Basic insurance ('], ['Assicurazione completa (', 'Assicurazione base ('],
@@ -398,7 +405,7 @@ function loadFileSync(): DbShape {
   const file = readFile();
   const cache = file ? upgrade(file) : fresh();
   G.__kbDb = cache;
-  if (!file) writeFile(cache);
+  writeFile(cache); // also saves what upgrade() changed
   applyAddons(cache.content.addons);
   return cache;
 }

@@ -15,6 +15,8 @@ export interface StoredSettings {
   /** where new-booking alerts go (blank = OWNER_EMAIL or info@kibabucars.com) */
   ownerEmail?: string;
   updatedAt?: string;
+  /** which built-in redirect list has been added (so links an admin deleted are not added back) */
+  redirectsVersion?: number;
 }
 
 function key(): Buffer {
