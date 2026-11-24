@@ -7,9 +7,9 @@ export const FAQ: FaqGroup[] = [
     id: 'booking', title: 'Booking & payment', icon: 'event_available',
     items: [
       { q: 'How do I book?', a: 'Book online in about 2 minutes, or send us a WhatsApp message with your dates, times, preferred car and pickup location. Online bookings are confirmed instantly when the car is free for your dates.' },
-      { q: 'How does payment work?', a: 'You pay 50% of the total online to secure your car. Your payment link is sent on WhatsApp and email right after you book. The other 50% is paid in cash or by card when you collect the car.' },
-      { q: 'Is there a security deposit on the car?', a: 'No. The 50% booking deposit is part of your rental price, not a damage deposit. Nothing extra is held on your card.' },
-      { q: 'What payment methods do you accept?', a: 'The 50% deposit is paid online by card. The balance can be paid in cash or by card on delivery. We tell you about any card fee before you pay.' },
+      { q: 'How does payment work?', a: 'You choose when you book: pay the full amount now through a payment link we send you on WhatsApp and email, or pay the full amount when you collect the car.' },
+      { q: 'Is there a security deposit on the car?', a: 'No. Nothing extra is held on your card. You only pay the rental price.' },
+      { q: 'What payment methods do you accept?', a: 'Paying now: by card through the payment link we send you. Paying at pickup: in cash or by card when you collect the car. We tell you about any card fee before you pay.' },
       { q: 'What is the minimum rental period?', a: 'Two days. Rentals are priced per day; there is no separate monthly rate, but long rentals get the long-term discount automatically.' },
       { q: 'Do you give discounts for longer rentals?', a: 'Yes. Book 7 days or more and every day is $5 cheaper, applied automatically in your quote. The Nissan Juke is the exception: it is already our lowest fixed price.' },
       { q: 'What if I return the car a few hours late?', a: 'Days are counted in 24-hour blocks from pickup. If you go over by 1 to 5 hours, the extra time is free (our grace period). 6 hours or more counts as one more day. The grace period does not apply to the Nissan Juke.' },

@@ -22,9 +22,9 @@ export const ES_CONTENT: LocalizedContent = {
       id: 'booking', title: 'Reserva y pago', icon: 'event_available',
       items: [
         { q: '¿Cómo reservo?', a: 'Reserva online en unos 2 minutos, o envíanos un WhatsApp con tus fechas, horas, coche preferido y lugar de recogida. Las reservas online se confirman al instante si el coche está libre en tus fechas.' },
-        { q: '¿Cómo funciona el pago?', a: 'Pagas online el 50% del total para asegurar tu coche. El enlace de pago te llega por WhatsApp y email justo después de reservar. El otro 50% se paga en efectivo o con tarjeta al recoger el coche.' },
-        { q: '¿Hay fianza por el coche?', a: 'No. El depósito del 50% forma parte del precio del alquiler, no es una fianza por daños. No se bloquea nada en tu tarjeta.' },
-        { q: '¿Qué formas de pago aceptáis?', a: 'El depósito del 50% se paga online con tarjeta. El resto se puede pagar en efectivo o con tarjeta en la entrega. Te avisamos de cualquier comisión por tarjeta antes de pagar.' },
+        { q: '¿Cómo funciona el pago?', a: 'Tú eliges al reservar: pagas el importe completo ahora con el enlace de pago que te enviamos por WhatsApp y email, o pagas el importe completo al recoger el coche.' },
+        { q: '¿Hay fianza por el coche?', a: 'No. No se bloquea nada en tu tarjeta. Solo pagas el precio del alquiler.' },
+        { q: '¿Qué formas de pago aceptáis?', a: 'Si pagas ahora: con tarjeta mediante el enlace de pago que te enviamos. Si pagas al recoger: en efectivo o con tarjeta al recoger el coche. Te avisamos de cualquier comisión de tarjeta antes de pagar.' },
         { q: '¿Cuál es el alquiler mínimo?', a: 'Dos días. Los alquileres se cobran por día; no hay tarifa mensual aparte, pero los alquileres largos reciben automáticamente el descuento por larga duración.' },
         { q: '¿Hay descuentos por alquileres largos?', a: 'Sí. Reservando 7 días o más, cada día cuesta $5 menos, aplicado automáticamente en tu presupuesto. La excepción es el Nissan Juke, que ya tiene nuestro precio fijo más bajo.' },
         { q: '¿Y si devuelvo el coche unas horas tarde?', a: 'Los días se cuentan en bloques de 24 horas desde la recogida. Si te pasas de 1 a 5 horas, el tiempo extra es gratis (nuestro periodo de cortesía). 6 horas o más cuentan como un día más. El periodo de cortesía no se aplica al Nissan Juke.' },

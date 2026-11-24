@@ -195,9 +195,12 @@
 .note.good { background: var(--shallows); color: var(--sea); }
 .total { display: flex; justify-content: space-between; align-items: baseline; border-top: 2px solid var(--sea); padding-top: 12px; margin-top: 10px; }
 .total strong { font-family: var(--serif); font-weight: 800; font-size: 2.2rem; color: var(--sea); font-variant-numeric: tabular-nums; }
-.sum-split { display: flex; justify-content: space-between; font-size: .9rem; color: var(--muted); margin-top: 4px; }
-.sum-split strong { color: var(--ink); }
-.sum-split.now strong { color: var(--lagoon); }
+.sum-pay { margin: 4px 0 0; font-size: .9rem; color: var(--muted); }
+/* pay now / at pickup */
+.pay { display: grid; gap: 8px; margin: 4px 0 6px; }
+.pay-q { font-weight: 700; font-size: .95rem; }
+.pay-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.pay small { color: var(--muted); font-size: .85rem; }
 .trust { list-style: none; padding: 14px 0 0; margin: 14px 0 0; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: .88rem; color: var(--muted); }
 .trust li { display: flex; align-items: center; gap: 8px; }
 .trust mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--lagoon); }

@@ -1,11 +1,15 @@
 import type { StoredSettings } from './settings';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
+import { accessSync, constants as FS } from 'node:fs';
 import type { Pool, RowDataPacket } from 'mysql2/promise';
 import { DEFAULT_ADDONS, SEED_CARS, applyAddons } from '../shared/business';
 import { DEFAULT_REDIRECTS, MissingLink, SiteContent, defaultContent } from '../shared/content';
 import { Booking, Car, ContactMessage } from '../shared/models';
 import { CONFIG } from './config';
+import { PAYMENT_FAQ_UPDATE } from './faq-migration';
 
 /**
  * Storage.
@@ -29,7 +33,26 @@ export interface DbShape {
   settings?: StoredSettings;
 }
 
-const DATA_DIR = resolve(process.env['DATA_DIR'] || join(process.cwd(), 'data'));
+/**
+ * Folder for the safety copy and daily backups. The first writable one of: DATA_DIR, ./data,
+ * the project folder (next to dist/), the system temp folder. Hosting platforms often start the
+ * app from a read-only folder, so it never relies on the start folder alone.
+ */
+function pickDataDir(): string {
+  const here = (() => { try { return dirname(fileURLToPath(import.meta.url)); } catch { return process.cwd(); } })();
+  const candidates = [process.env['DATA_DIR'], join(process.cwd(), 'data'), resolve(here, '../../../data'), join(tmpdir(), 'kibabu-data')];
+  for (const c of candidates) {
+    if (!c) continue;
+    try {
+      mkdirSync(c, { recursive: true });
+      accessSync(c, FS.W_OK);
+      return resolve(c);
+    } catch { /* not writable, try the next one */ }
+  }
+  return join(tmpdir(), 'kibabu-data');
+}
+const DATA_DIR = pickDataDir();
+console.log("[kibabu] data folder:", DATA_DIR);
 const DB_FILE = join(DATA_DIR, 'db.json');
 export const UPLOADS_DIR = join(DATA_DIR, 'uploads');
 const CONTENT_KEYS = ['business', 'about', 'faq', 'blog', 'addons', 'redirects', 'i18n'] as const;
@@ -65,6 +88,10 @@ function upgrade(cache: DbShape): DbShape {
   const fixFaq = (groups?: { items: { a: string }[] }[]) => groups?.forEach((g) => g.items.forEach((it) => { for (const [a, b] of basic) it.a = it.a.split(a).join(b); }));
   fixFaq(cache.content.faq);
   for (const t of Object.values(cache.content.i18n ?? {})) fixFaq((t as { faq?: { items: { a: string }[] }[] }).faq);
+  // payment is now "pay now or at pickup" (no 50/50 split): update the default answers nobody has edited
+  const payFaq = (groups?: { items: { a: string }[] }[]) => groups?.forEach((g) => g.items.forEach((it) => { it.a = PAYMENT_FAQ_UPDATE[it.a] ?? it.a; }));
+  payFaq(cache.content.faq);
+  for (const t of Object.values(cache.content.i18n ?? {})) payFaq((t as { faq?: { items: { a: string }[] }[] }).faq);
   // add built-in translations for languages that have none yet (admin edits are kept)
   cache.content.i18n ??= {};
   for (const [lang, t] of Object.entries(def.i18n ?? {})) (cache.content.i18n as Record<string, unknown>)[lang] ??= t;
@@ -85,7 +112,15 @@ function readFile(): DbShape | null {
   }
 }
 
+/** The local safety copy. A failure here is logged and never stops the site or the database. */
 function writeFile(cache: DbShape) {
+  try {
+    writeFileNow(cache);
+  } catch (e) {
+    console.error('[kibabu] could not write the safety copy', DB_FILE, (e as Error).message);
+  }
+}
+function writeFileNow(cache: DbShape) {
   if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
   const tmp = DB_FILE + '.tmp';
   writeFileSync(tmp, JSON.stringify(cache, null, 2));
@@ -494,7 +529,7 @@ export function startBackups(keepDays = 14): void {
       console.error('[kibabu] backup failed', (e as Error).message);
     }
   };
-  void db.init().then(run);
+  void db.init().then(run, () => { /* database not reachable yet: the next request retries */ });
   setInterval(run, 24 * 60 * 60 * 1000).unref();
 }
 

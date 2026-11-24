@@ -271,14 +271,13 @@
             <li class="tot"><span>Total</span><span>{{ b.quote.total | usd }}</span></li>
           </ul>
           <div class="split">
-            <div class="now"><small>Deposit (50%)</small><strong>{{ (b.quote.deposit ?? b.quote.total / 2) | usd }}</strong></div>
-            <div><small>On delivery (50%)</small><strong>{{ (b.quote.balance ?? b.quote.total / 2) | usd }}</strong></div>
+            <div class="now"><small>{{ b.paymentMethod === 'online' ? 'Pays now (send payment link)' : 'Pays at pickup' }}</small><strong>{{ b.quote.total | usd }}</strong></div>
           </div>
         </section>
 
         <section class="dr-sec">
           <h3>Internal note</h3>
-          <textarea class="note" rows="3" [(ngModel)]="note" placeholder="Only staff see this, e.g. “Deposit received by M-Pesa”"></textarea>
+          <textarea class="note" rows="3" [(ngModel)]="note" placeholder="Only staff see this, e.g. “Paid by M-Pesa”"></textarea>
           <button mat-stroked-button (click)="saveNote(b)"><mat-icon>save</mat-icon> Save note</button>
         </section>
       </div>

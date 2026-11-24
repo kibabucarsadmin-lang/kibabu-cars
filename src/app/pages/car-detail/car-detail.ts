@@ -36,7 +36,7 @@ import { TPipe } from '../../core/i18n';
             <ul>
               <li>{{ 'Insurance and unlimited km included' | t }}</li>
               <li>{{ 'Free delivery to the airport or Stone Town' | t }}</li>
-              <li>{{ '50% deposit to book, the rest on delivery' | t }}</li>
+              <li>{{ 'Pay now or when you pick up the car' | t }}</li>
             </ul>
           </aside>
         </div>

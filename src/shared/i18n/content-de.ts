@@ -22,9 +22,9 @@ export const DE_CONTENT: LocalizedContent = {
       id: 'booking', title: 'Buchung & Zahlung', icon: 'event_available',
       items: [
         { q: 'Wie buche ich?', a: 'Buchen Sie online in etwa 2 Minuten oder schicken Sie uns per WhatsApp Daten, Uhrzeiten, Wunschauto und Abholort. Online-Buchungen werden sofort bestätigt, wenn das Auto an Ihren Tagen frei ist.' },
-        { q: 'Wie funktioniert die Zahlung?', a: 'Sie zahlen 50% des Gesamtbetrags online, um Ihr Auto zu sichern. Den Zahlungslink erhalten Sie direkt nach der Buchung per WhatsApp und E-Mail. Die anderen 50% zahlen Sie bei Abholung bar oder per Karte.' },
-        { q: 'Gibt es eine Kaution für das Auto?', a: 'Nein. Die Anzahlung von 50% ist Teil des Mietpreises, keine Schadenskaution. Auf Ihrer Karte wird nichts zusätzlich blockiert.' },
-        { q: 'Welche Zahlungsarten akzeptieren Sie?', a: 'Die Anzahlung von 50% wird online per Karte bezahlt. Der Rest kann bei Übergabe bar oder per Karte bezahlt werden. Über Kartengebühren informieren wir Sie vor der Zahlung.' },
+        { q: 'Wie funktioniert die Zahlung?', a: 'Sie entscheiden bei der Buchung: Sie zahlen den vollen Betrag sofort über einen Zahlungslink, den wir Ihnen per WhatsApp und E-Mail senden, oder den vollen Betrag bei Übernahme des Autos.' },
+        { q: 'Gibt es eine Kaution für das Auto?', a: 'Nein. Auf Ihrer Karte wird nichts blockiert. Sie zahlen nur den Mietpreis.' },
+        { q: 'Welche Zahlungsarten akzeptieren Sie?', a: 'Sofortzahlung: per Karte über den Zahlungslink, den wir Ihnen senden. Zahlung bei Übernahme: bar oder per Karte, wenn Sie das Auto abholen. Über Kartengebühren informieren wir Sie vor der Zahlung.' },
         { q: 'Wie lang ist die Mindestmietdauer?', a: 'Zwei Tage. Mieten werden pro Tag berechnet; einen eigenen Monatstarif gibt es nicht, aber lange Mieten erhalten automatisch den Langzeitrabatt.' },
         { q: 'Gibt es Rabatte für längere Mieten?', a: 'Ja. Ab 7 Tagen ist jeder Tag $5 günstiger, automatisch in Ihrem Angebot berücksichtigt. Ausnahme ist der Nissan Juke, der bereits unseren niedrigsten Festpreis hat.' },
         { q: 'Was, wenn ich das Auto ein paar Stunden später zurückgebe?', a: 'Tage werden in 24-Stunden-Blöcken ab Abholung gezählt. Bei 1 bis 5 Stunden Überziehung ist die Zusatzzeit kostenlos (unsere Kulanzzeit). 6 Stunden oder mehr zählen als ein weiterer Tag. Die Kulanzzeit gilt nicht für den Nissan Juke.' },

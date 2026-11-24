@@ -31,8 +31,7 @@ import { I18n, TPipe } from '../core/i18n';
         <div class="total"><dt>{{ 'Total' | t }}</dt><dd>{{ b.quote.total | usd }}</dd></div>
       </dl>
       <div class="split">
-        <div class="now"><small>{{ 'Pay now (50%)' | t }}</small><strong>{{ b.quote.deposit | usd }}</strong></div>
-        <div><small>{{ 'Pay at pickup (50%)' | t }}</small><strong>{{ b.quote.balance | usd }}</strong></div>
+        <div class="now"><small>{{ (b.paymentMethod === 'online' ? 'Pay now' : 'Pay at pickup') | t }}</small><strong>{{ b.quote.total | usd }}</strong></div>
       </div>
     </section>
   `,

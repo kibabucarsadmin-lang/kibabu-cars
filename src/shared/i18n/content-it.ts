@@ -22,9 +22,9 @@ export const IT_CONTENT: LocalizedContent = {
       id: 'booking', title: 'Prenotazione e pagamento', icon: 'event_available',
       items: [
         { q: 'Come si prenota?', a: 'Prenota online in circa 2 minuti, oppure scrivici su WhatsApp con date, orari, auto preferita e luogo di ritiro. Le prenotazioni online sono confermate subito se l’auto è libera nelle tue date.' },
-        { q: 'Come funziona il pagamento?', a: 'Paghi online il 50% del totale per bloccare l’auto. Il link di pagamento ti arriva su WhatsApp e via email subito dopo la prenotazione. L’altro 50% lo paghi in contanti o con carta al ritiro.' },
-        { q: 'C’è un deposito cauzionale sull’auto?', a: 'No. L’acconto del 50% fa parte del prezzo del noleggio, non è una cauzione per danni. Sulla tua carta non viene bloccato nulla.' },
-        { q: 'Quali metodi di pagamento accettate?', a: 'L’acconto del 50% si paga online con carta. Il saldo si paga in contanti o con carta alla consegna. Ti avvisiamo di eventuali commissioni sulla carta prima del pagamento.' },
+        { q: 'Come funziona il pagamento?', a: 'Scegli tu quando prenoti: paghi l’intero importo subito tramite il link di pagamento che ti inviamo su WhatsApp e via email, oppure paghi l’intero importo al ritiro dell’auto.' },
+        { q: 'C’è un deposito cauzionale sull’auto?', a: 'No. Sulla tua carta non viene bloccato nulla. Paghi solo il prezzo del noleggio.' },
+        { q: 'Quali metodi di pagamento accettate?', a: 'Se paghi subito: con carta tramite il link di pagamento che ti inviamo. Se paghi al ritiro: in contanti o con carta quando ritiri l’auto. Ti avvisiamo di eventuali commissioni sulla carta prima del pagamento.' },
         { q: 'Qual è la durata minima del noleggio?', a: 'Due giorni. Il prezzo è al giorno; non c’è una tariffa mensile separata, ma i noleggi lunghi ricevono lo sconto lungo periodo in automatico.' },
         { q: 'Ci sono sconti per noleggi più lunghi?', a: 'Sì. Prenotando 7 giorni o più ogni giorno costa $5 in meno, applicato automaticamente nel preventivo. Fa eccezione la Nissan Juke, che ha già il nostro prezzo fisso più basso.' },
         { q: 'E se riconsegno l’auto con qualche ora di ritardo?', a: 'I giorni si contano in blocchi di 24 ore dal ritiro. Se sfori da 1 a 5 ore, il tempo extra è gratis (il nostro periodo di tolleranza). 6 ore o più contano come un giorno in più. La tolleranza non vale per la Nissan Juke.' },

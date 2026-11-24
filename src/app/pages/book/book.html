@@ -15,7 +15,7 @@
         <div><dt>{{ 'Return place' | t }}</dt><dd>{{ locLabel(b.returnLocation) }}</dd></div>
         <div><dt>{{ 'Pickup' | t }}</dt><dd>{{ b.pickupAt | date: 'EEE d MMM, HH:mm' }}</dd></div>
         <div><dt>{{ 'Return' | t }}</dt><dd>{{ b.returnAt | date: 'EEE d MMM, HH:mm' }}</dd></div>
-        <div class="tot"><dt>{{ 'Total' | t }}</dt><dd>{{ b.quote.total | usd }}<small>{{ 'Pay now {now}, pay later {later}' | t: { now: (b.quote.deposit | usd), later: (b.quote.balance | usd) } }}</small></dd></div>
+        <div class="tot"><dt>{{ 'Total' | t }}</dt><dd>{{ b.quote.total | usd }}<small>{{ payLabel(b) | t }}</small></dd></div>
       </dl>
       @if (confirmedExtras(b); as xs) {
         @if (xs.length) {
@@ -245,6 +245,14 @@
                 </mat-autocomplete>
               </mat-form-field>
             </form>
+            <div class="pay" role="radiogroup" [attr.aria-label]="'How do you want to pay?' | t">
+              <span class="pay-q">{{ 'How do you want to pay?' | t }}</span>
+              <div class="pay-opts">
+                <button type="button" class="chip" role="radio" [class.on]="pay() === 'arrival'" [attr.aria-checked]="pay() === 'arrival'" (click)="pay.set('arrival')">{{ 'Pay at pickup' | t }}</button>
+                <button type="button" class="chip" role="radio" [class.on]="pay() === 'online'" [attr.aria-checked]="pay() === 'online'" (click)="pay.set('online')">{{ 'Pay now' | t }}</button>
+              </div>
+              <small>{{ (pay() === 'online' ? 'We send you a payment link on WhatsApp right after you book.' : 'Pay the full amount in cash or by card when you get the car.') | t }}</small>
+            </div>
             <p class="terms">{{ 'By booking you accept our' | t }} <a routerLink="/terms" target="_blank">{{ 'rental terms' | t }}</a>.</p>
             @if (error()) { <p class="warn" role="alert"><mat-icon>error</mat-icon> {{ error() | t }}</p> }
           
@@ -314,8 +322,7 @@
         @for (w of q.warningsI18n ?? []; track $index) { <p class="note"><mat-icon>info</mat-icon> {{ w.t | t: w.p }}</p> }
         <div class="total"><span>{{ 'Total' | t }}</span><strong>{{ shownTotal() | usd }}</strong></div>
         @if (savings() > 0) { <p class="sum-save"><mat-icon>savings</mat-icon> {{ 'You save {amount}' | t: { amount: '$' + savings() } }}</p> }
-        <div class="sum-split now"><span>{{ 'Pay now (50%)' | t }}</span><strong>{{ q.deposit | usd }}</strong></div>
-        <div class="sum-split"><span>{{ 'Pay later on delivery (50%)' | t }}</span><strong>{{ q.balance | usd }}</strong></div>
+        <p class="sum-pay">{{ 'Pay now or when you pick up the car' | t }}</p>
       }
       <ul class="trust">
         <li><mat-icon>event_available</mat-icon> {{ 'Free cancellation before pickup' | t }}</li>

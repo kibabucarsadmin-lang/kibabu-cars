@@ -101,7 +101,9 @@ export class Book {
     website: [''], // spam trap
   });
 
-  protected readonly paymentMethod = this.fb.control<'arrival' | 'online'>('arrival');
+  /** pay the full amount now (payment link on WhatsApp) or at pickup */
+  protected readonly pay = signal<'arrival' | 'online'>('arrival');
+  protected payLabel(b: { paymentMethod?: string }) { return b.paymentMethod === 'online' ? 'Pay now' : 'Pay at pickup'; }
 
   /** A typed date that could not be read (shown under the dates field). */
   protected badDate() {
@@ -403,7 +405,7 @@ export class Book {
       babySeats: d.babySeats,
       customer: { name: d.name, email: d.email, phone: d.phone, country: d.country },
       notes: d.notes,
-      paymentMethod: this.paymentMethod.value,
+      paymentMethod: this.pay(),
       website: d.website ?? '',
     };
     this.submitting.set(true);
@@ -428,7 +430,7 @@ export class Book {
         `Return: ${fmt(b.returnAt)} – ${this.locEn(b.returnLocation)}\n` +
         `Drivers: ${b.drivers}\n` +
         `Extras: ${this.extrasText(b)}\n` +
-        `Total: $${b.quote.total} (pay now $${b.quote.deposit}, at pickup $${b.quote.balance})\nName: ${b.customer.name}\n` +
+        `Total: $${b.quote.total} (${b.paymentMethod === 'online' ? 'pay now, please send the payment link' : 'pay at pickup'})\nName: ${b.customer.name}\n` +
         `I will send my licence, passport copy and photo for the driving permit.`,
     );
   }

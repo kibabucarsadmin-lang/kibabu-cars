@@ -67,6 +67,8 @@ ${cell(t('Pickup'), b.pickupLocation, b.pickupAt, '0 6px 0 0')}${cell(t('Return'
 }
 
 /** what they pay: each line, the total, then now / at pickup */
+const payNow = (b: Booking) => b.paymentMethod === 'online';
+
 function price(b: Booking, t: Tr) {
   const row = (k: string, v: string, strong = false) => `<tr><td style="padding:7px 0;font-size:15px;${strong ? 'font-weight:800;font-size:18px' : `color:${C.muted}`}">${esc(k)}</td><td align="right" style="padding:7px 0;font-size:15px;${strong ? 'font-weight:800;font-size:18px' : ''}">${v}</td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -74,10 +76,8 @@ ${b.quote.lines.map((l) => row(l.t ? t(l.t, l.p) : l.label, money(l.amount))).jo
 <tr><td colspan="2" style="border-top:1px solid ${C.line};font-size:0;line-height:0;padding-top:6px">&nbsp;</td></tr>
 ${row(t('Total'), money(b.quote.total), true)}
 </table>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px"><tr>
-<td class="col" width="50%" style="padding:0 6px 0 0"><div style="border:1.5px solid ${C.lagoon};border-radius:14px;padding:12px 14px">${label(t('Pay now (50%)'))}<div style="font-size:18px;font-weight:800;color:${C.lagoon}">${money(b.quote.deposit)}</div></div></td>
-<td class="col" width="50%" style="padding:0 0 0 6px"><div style="border:1.5px solid ${C.line};border-radius:14px;padding:12px 14px">${label(t('Pay at pickup (50%)'))}<div style="font-size:18px;font-weight:800">${money(b.quote.balance)}</div></div></td>
-</tr></table>`;
+<div style="margin-top:12px;border:1.5px solid ${C.lagoon};border-radius:14px;padding:12px 14px">${label(t(payNow(b) ? 'Pay now' : 'Pay at pickup'))}<div style="font-size:18px;font-weight:800;color:${C.lagoon}">${money(b.quote.total)}</div>
+<div style="font-size:13px;color:${C.muted};margin-top:4px">${esc(t(payNow(b) ? 'We send you a payment link on WhatsApp right after you book.' : 'Pay the full amount in cash or by card when you get the car.'))}</div></div>`;
 }
 
 function extrasList(b: Booking, t: Tr) {
@@ -111,9 +111,11 @@ ${section(trip(b, t, locale) + extrasList(b, t))}
 ${section(price(b, t))}
 ${section(`<div style="font-size:17px;font-weight:800;margin:0 0 12px">${esc(t('Next steps'))}</div>
 ${[
-    t('Pay the 50% deposit ({amount}). We send you the payment link on WhatsApp.', { amount: money(b.quote.deposit) }),
+    ...(payNow(b) ? [t('Pay {amount} with the payment link we send you on WhatsApp.', { amount: money(b.quote.total) })] : []),
     t('Send your driving licence, passport copy and a passport photo for your Zanzibar driving permit.'),
-    t('Meet us at {place}. Pay the balance ({amount}) in cash or by card.', { place: t(loc(b.pickupLocation)), amount: money(b.quote.balance) }),
+    payNow(b)
+      ? t('Meet us at {place} and collect your car.', { place: t(loc(b.pickupLocation)) })
+      : t('Meet us at {place}. Pay {amount} in cash or by card.', { place: t(loc(b.pickupLocation)), amount: money(b.quote.total) }),
   ].map((s, i) => `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 12px"><tr>
 <td valign="top" style="padding:0 12px 0 0"><div style="width:26px;height:26px;line-height:26px;border-radius:50%;background:${C.lagoon};color:#fff;text-align:center;font-weight:800;font-size:13px">${i + 1}</div></td>
 <td style="font-size:15px;line-height:1.5;padding-top:2px">${esc(s)}</td></tr></table>`).join('')}
@@ -133,7 +135,7 @@ export function officeEmail(b: Booking, photo: string | null = null) {
 <tr><td class="px" style="background:${C.sea};padding:26px 32px;color:#ffffff">
 <div style="font-size:13px;font-weight:700;color:#9fe3dc;margin:0 0 8px">New booking &nbsp;${esc(b.ref)}</div>
 <div class="h1" style="font-size:26px;line-height:1.2;font-weight:800;margin:0 0 6px">${esc(c.name)} booked the ${esc(b.carName)}</div>
-<div style="font-size:15px;color:#b8d6d8">${esc(day(b.pickupAt))} – ${esc(day(b.returnAt))} &nbsp;(${b.quote.days} days) &nbsp;<strong style="color:#fff">${money(b.quote.total)}</strong></div>
+<div style="font-size:15px;color:#b8d6d8">${esc(day(b.pickupAt))} – ${esc(day(b.returnAt))} &nbsp;(${b.quote.days} days) &nbsp;<strong style="color:#fff">${money(b.quote.total)}</strong> &nbsp;${payNow(b) ? 'pays now: send the payment link' : 'pays at pickup'}</div>
 </td></tr>
 ${section(`${label('Customer')}<table role="presentation" cellpadding="0" cellspacing="0">
 ${info('Name', esc(c.name))}${info('WhatsApp', esc(c.phone))}${info('Email', `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>`)}${info('Country', esc(c.country))}
@@ -158,7 +160,7 @@ export function sampleBooking(car?: { id: string; name: string; pricePerDay: num
   return {
     id: 'sample', ref: 'KB-TEST1', status: 'confirmed', carId: car?.id ?? 'rav4-5-door', carName: car?.name ?? 'Toyota RAV4 5-Door',
     pickupAt: start.toISOString(), returnAt: end.toISOString(), pickupLocation: 'airport', returnLocation: 'stone-town',
-    drivers: 1, babySeats: 0, extras: ['permit', 'cooler'], needPermit: true, paymentMethod: 'card', lang: 'en',
+    drivers: 1, babySeats: 0, extras: ['permit', 'cooler'], needPermit: true, paymentMethod: 'arrival', lang: 'en',
     customer: { name: 'Sample Guest', email: 'guest@example.com', phone: '+255 777 000 000', country: 'Tanzania' },
     quote: { days: 5, dailyRate: rate, total, deposit: total / 2, balance: total / 2, lines: [
       { label: `5 days × $${rate}`, amount: rate * 5, t: '{n} days × {price}', p: { n: 5, price: '$' + rate } },

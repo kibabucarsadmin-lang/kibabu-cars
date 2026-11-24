@@ -14,7 +14,7 @@ import { TPipe } from '../core/i18n';
 /** "What will my trip cost?" – pick a car and drag the days; the total counts up live. */
 @Component({
   selector: 'kb-estimator',
-  imports: [TPipe, UsdPipe, MatButtonModule, MatSliderModule, RouterLink, Photo],
+  imports: [TPipe, MatButtonModule, MatSliderModule, RouterLink, Photo],
   template: `
     <div class="est">
       <div class="left">
@@ -46,7 +46,7 @@ import { TPipe } from '../core/i18n';
           <p class="sub">{{ 'for {n} days at {rate} a day, with the driving permit' | t: { n: days(), rate: '$' + quote()?.dailyRate } }}
             @if (quote()?.discountPerDay) { <span class="save">-\${{ quote()?.discountPerDay }}{{ '/day long-term' | t }}</span> }
           </p>
-          <p class="incl">{{ 'Insurance, unlimited km and airport delivery included. Pay {amount} now, the rest on delivery.' | t: { amount: (quote()?.deposit | usd) } }}</p>
+          <p class="incl">{{ 'Insurance, unlimited km and airport delivery included. Pay now or when you pick up the car.' | t }}</p>
           <a mat-flat-button class="btn-brass btn-lg" routerLink="/book" [queryParams]="params()">{{ 'Book these dates' | t }}</a>
         }
       </div>

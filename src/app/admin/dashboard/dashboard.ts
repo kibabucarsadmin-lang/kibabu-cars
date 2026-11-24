@@ -271,18 +271,18 @@ export class Dashboard {
     return this.wa(b.customer.phone,
       `Hello ${b.customer.name.split(' ')[0]}, this is Kibabu Cars Zanzibar 🚗\n` +
       `Your booking ${b.ref} is CONFIRMED:\n${b.carName}\nPickup: ${fmt(b.pickupAt)} – ${this.loc(b.pickupLocation)}\n` +
-      `Return: ${fmt(b.returnAt)} – ${this.loc(b.returnLocation)}\nTotal: $${b.quote.total}\n50% deposit to pay now: $${b.quote.deposit ?? b.quote.total / 2}\nBalance on delivery (cash or card): $${b.quote.balance ?? b.quote.total / 2}\n` +
+      `Return: ${fmt(b.returnAt)} – ${this.loc(b.returnLocation)}\nTotal: $${b.quote.total}\n${b.paymentMethod === 'online' ? 'Payment: pay now – here is your payment link: ' : 'Payment: in cash or by card when you get the car'}\n` +
       `\nFor your Zanzibar driving permit please send: driving licence, passport copy and a passport photo for each driver.\n` +
       `\nKaribu Zanzibar!`);
   }
 
   protected exportCsv() {
     const rows = [
-      ['Ref', 'Status', 'Name', 'Email', 'Phone', 'Country', 'Car', 'Pickup', 'Pickup location', 'Return', 'Return location', 'Flight / hotel', 'Passport', 'Days', 'Total USD', 'Deposit', 'Balance', 'Drivers', 'Baby seats', 'Created'],
+      ['Ref', 'Status', 'Name', 'Email', 'Phone', 'Country', 'Car', 'Pickup', 'Pickup location', 'Return', 'Return location', 'Flight / hotel', 'Passport', 'Days', 'Total USD', 'Payment', 'Drivers', 'Baby seats', 'Created'],
       ...this.filtered().map((b) => [
         b.ref, b.status, b.customer.name, b.customer.email, b.customer.phone, b.customer.country, b.carName,
         b.pickupAt, this.loc(b.pickupLocation), b.returnAt, this.loc(b.returnLocation), b.pickupDetails ?? '', b.passportNumber ?? '',
-        b.quote.days, b.quote.total, b.quote.deposit ?? '', b.quote.balance ?? '', b.drivers, b.babySeats, b.createdAt,
+        b.quote.days, b.quote.total, b.paymentMethod === 'online' ? 'Pay now' : 'At pickup', b.drivers, b.babySeats, b.createdAt,
       ]),
     ];
     // a cell starting with = + - @ would run as a formula in Excel (CSV injection), so it is prefixed with '

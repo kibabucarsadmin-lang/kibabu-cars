@@ -22,7 +22,7 @@ import { MatButtonModule } from '@angular/material/button';
           <li>{{ 'Prices include basic insurance (per the rental agreement), taxes and unlimited kilometres.' | t }}</li>
           <li>{{ 'Insurance does not cover tyres, rims, mirrors, glass, keys, underbody damage, negligence, misuse, unauthorised or impaired drivers, or traffic fines.' | t }}</li>
           <li>{{ 'Fuel policy: return the car with about the same fuel level as at pickup.' | t }}</li>
-          <li>{{ 'Payment: 50% of the total online to confirm the booking, the remaining 50% in cash or by card on delivery. No damage deposit is held.' | t }}</li>
+          <li>{{ 'Payment: you choose when you book. Pay the full amount now through the payment link we send you, or in cash or by card when you collect the car. No damage deposit is held.' | t }}</li>
           <li>{{ 'Days are counted in 24-hour blocks from pickup. Extra time of 1 to {h} hours is free; 6 hours or more counts as one more day. The grace period and long-term discount do not apply to the Nissan Juke.' | t: { h: r.graceHours } }}</li>
           <li>{{ 'Coastal area delivery or collection costs $20 each way. Airport and Stone Town are free.' | t }}</li>
           <li>{{ 'Airport bookings require a flight number and passport number.' | t }}</li>
