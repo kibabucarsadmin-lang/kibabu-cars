@@ -127,7 +127,7 @@
           <a [href]="langHref(l.id)" [attr.hreflang]="l.id" [attr.lang]="l.id" [attr.aria-label]="l.name" [title]="l.name" [class.on]="l.id === i18n.lang" [attr.aria-current]="l.id === i18n.lang ? 'true' : null" (click)="pickLang(l.id, $event)"><kb-flag [lang]="l.id" /></a>
         }
       </div>
-      <p class="m-note">{{ b.phone }}, {{ b.email }}<br />{{ 'Open day and night.' | t }}</p>
+      <p class="m-note">{{ b.phone }}@if (mail.address()) {, {{ mail.address() }}}<br />{{ 'Open day and night.' | t }}</p>
     </div>
   </div>
 
@@ -159,7 +159,7 @@
             <h4>{{ 'Talk to us' | t }}</h4>
             <a [href]="wa" target="_blank" rel="noopener">{{ 'WhatsApp' | t }}</a>
             <a [href]="tel">{{ b.phone }}</a>
-            <a [href]="'mailto:' + b.email">{{ b.email }}</a>
+            @if (mail.href()) { <a [href]="mail.href()">{{ mail.address() }}</a> }
           </div>
         </div>
       </div>

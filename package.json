@@ -9,7 +9,8 @@
     "test": "ng test",
     "serve:ssr:kibabu-cars": "node dist/kibabu-cars/server/server.mjs",
     "i18n": "node scripts/i18n-keys.mjs",
-    "dev": "ng serve"
+    "dev": "ng serve",
+    "icons": "python3 scripts/subset-icons.py"
   },
   "private": true,
   "packageManager": "npm@10.9.9",

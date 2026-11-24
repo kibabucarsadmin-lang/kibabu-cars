@@ -1,6 +1,7 @@
 import { tx } from '../../shared/i18n';
 import { Busy } from '../core/busy';
 import { Analytics } from '../core/analytics';
+import { EmailLink } from '../shared/email-link';
 import { CarLoader } from '../shared/car-loader';
 import { A11yModule } from '@angular/cdk/a11y';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
@@ -32,6 +33,7 @@ export class Shell {
   private router = inject(Router);
   protected readonly busy = inject(Busy);
   protected readonly analytics = inject(Analytics);
+  protected readonly mail = inject(EmailLink);
   private doc = inject(DOCUMENT);
   private browser = isPlatformBrowser(inject(PLATFORM_ID));
   protected readonly fleet = inject(Fleet);

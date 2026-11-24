@@ -4,6 +4,7 @@ import { BUSINESS, RULES } from '../../../shared/business';
 import { Seo } from '../../core/seo';
 import { TPipe } from '../../core/i18n';
 import { Analytics } from '../../core/analytics';
+import { EmailLink } from '../../shared/email-link';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
@@ -36,7 +37,7 @@ import { MatButtonModule } from '@angular/material/button';
         <p>{{ 'The site works without cookies. Only if you click “Accept” do we load Google Analytics and Google Ads, which use cookies to show us which pages and ads bring bookings. You can change your choice at any time with “Cookie settings” at the bottom of every page.' | t }}</p>
         @if (analytics.enabled()) { <p><button mat-stroked-button type="button" (click)="analytics.openSettings()">{{ 'Cookie settings' | t }}</button></p> }
         <p>{{ 'You can ask us at any time to see, correct or delete your personal data.' | t }}</p>
-        <p>{{ 'Questions or deletion requests:' | t }} <a [href]="'mailto:' + b.email">{{ b.email }}</a>.</p>
+        <p>{{ 'Questions or deletion requests:' | t }} @if (mail.href()) { <a [href]="mail.href()">{{ mail.address() }}</a>. }</p>
       </div>
     </section>
   `,
@@ -49,6 +50,7 @@ export class Terms {
   protected readonly r = RULES;
   protected readonly b = BUSINESS;
   protected readonly analytics = inject(Analytics);
+  protected readonly mail = inject(EmailLink);
   constructor() {
     inject(Seo).set({ title: tx('Rental terms & privacy'), description: tx('Kibabu Cars Zanzibar rental terms and privacy policy.'), path: '/terms' });
   }

@@ -31,6 +31,7 @@
 .kicker { margin: 0 0 18px; font-size: .95rem; font-weight: 600; color: rgba(255,255,255,.8); letter-spacing: .01em; }
 .hero h1 { color: #fff; max-width: 10.5em; margin-bottom: 22px; font-size: clamp(2.6rem, 6.4vw, 4.9rem); line-height: .98; letter-spacing: -0.03em; }
 /* each word rises out of its own line mask, one after another */
+.hero h1 { display: flex; flex-wrap: wrap; column-gap: .24em; }
 .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .08em; margin-bottom: -.08em; }
 .w > span { display: inline-block; animation: word .95s cubic-bezier(.2,.75,.15,1) both; animation-delay: calc(.15s + var(--d) * .07s); }
 @keyframes word { from { transform: translateY(105%); } }

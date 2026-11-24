@@ -9,6 +9,7 @@ import { BUSINESS, whatsappLink } from '../../../shared/business';
 import { Api } from '../../core/api';
 import { Seo } from '../../core/seo';
 import { TPipe } from '../../core/i18n';
+import { EmailLink } from '../../shared/email-link';
 
 @Component({
   selector: 'kb-contact',
@@ -27,7 +28,9 @@ import { TPipe } from '../../core/i18n';
             <mat-icon>chat</mat-icon><div><strong>{{ 'WhatsApp' | t }}</strong><span>{{ b.phone }}</span></div><mat-icon class="go">arrow_forward</mat-icon>
           </a>
           <a class="ch card" [href]="tel"><mat-icon>call</mat-icon><div><strong>{{ 'Call us' | t }}</strong><span>{{ b.phone }}</span></div><mat-icon class="go">arrow_forward</mat-icon></a>
-          <a class="ch card" [href]="'mailto:' + b.email"><mat-icon>mail</mat-icon><div><strong>{{ 'Email' | t }}</strong><span>{{ b.email }}</span></div><mat-icon class="go">arrow_forward</mat-icon></a>
+          @if (mail.href()) {
+            <a class="ch card" [href]="mail.href()"><mat-icon>mail</mat-icon><div><strong>{{ 'Email' | t }}</strong><span>{{ mail.address() }}</span></div><mat-icon class="go">arrow_forward</mat-icon></a>
+          }
           <div class="ch card"><mat-icon>location_on</mat-icon><div><strong>{{ 'Based in' | t }}</strong><span>{{ b.address }}</span></div></div>
           @if (b.facebook || b.instagram || b.tiktok) {
             <div class="socials">
@@ -84,6 +87,7 @@ import { TPipe } from '../../core/i18n';
 })
 export class Contact {
   private api = inject(Api);
+  protected readonly mail = inject(EmailLink);
   protected readonly b = BUSINESS;
   protected readonly tel = 'tel:' + BUSINESS.phone.replace(/\s/g, '');
   protected readonly wa = whatsappLink('Hello Kibabu Cars! ');

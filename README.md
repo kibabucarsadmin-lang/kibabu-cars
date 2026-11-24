@@ -72,6 +72,11 @@ All settings live in `.env` (copy `.env.example`). The important ones:
 npm test -- --watch=false   # pricing rules, grace period, discounts, input sanitising
 ```
 
+## Icons
+
+The site uses Google's Material Symbols, cut down to the icons it actually uses (`src/assets-fonts/material-symbols-kibabu.woff2`, about 220 KB instead of 4 MB).
+After using a new icon name in the code, run `npm run icons` (needs Python with `pip install fonttools brotli`) and commit the new font file.
+
 ## Languages
 
 The site is in **English, Italiano, Русский, Español and Deutsch**. Each language has its own address

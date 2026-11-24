@@ -13,7 +13,7 @@
     <p class="kicker h-in">{{ 'Self-drive car hire in Zanzibar' | t }}</p>
     <h1 [attr.aria-label]="headline">
       @for (w of headlineWords; track $index) {
-        <span class="w" aria-hidden="true"><span [style.--d]="$index">{{ w }}</span></span>{{ ' ' }}
+        <span class="w" aria-hidden="true"><span [style.--d]="$index">{{ w }}</span></span>
       }
     </h1>
     <p class="lead h-in d2">{{ 'From {price} a day with insurance, unlimited kilometres and free delivery to the airport or Stone Town.' | t: { price: '$' + fleet.cheapest() } }}</p>
