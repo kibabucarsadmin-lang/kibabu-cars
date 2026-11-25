@@ -229,6 +229,7 @@ export class Dashboard {
 
   protected open(b: Booking) {
     this.selected.set(b);
+    this.composing.set(false);
     this.note = b.adminNote ?? '';
   }
 
@@ -266,14 +267,39 @@ export class Dashboard {
     return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
   }
 
-  protected confirmMsg(b: Booking) {
-    const fmt = (s: string) => new Date(s).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
-    return this.wa(b.customer.phone,
-      `Hello ${b.customer.name.split(' ')[0]}, this is Kibabu Cars Zanzibar 🚗\n` +
+  /** the confirmation text, used for WhatsApp and as the start of an email */
+  protected confirmText(b: Booking, emoji = true) {
+    const fmt = (s: string) => new Date(s).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Dar_es_Salaam' });
+    return `Hello ${b.customer.name.split(' ')[0]}, this is Kibabu Cars Zanzibar${emoji ? ' 🚗' : ''}\n` +
       `Your booking ${b.ref} is CONFIRMED:\n${b.carName}\nPickup: ${fmt(b.pickupAt)} – ${this.loc(b.pickupLocation)}\n` +
-      `Return: ${fmt(b.returnAt)} – ${this.loc(b.returnLocation)}\nTotal: $${b.quote.total}\n${b.paymentMethod === 'online' ? 'Payment: pay now – here is your payment link: ' : 'Payment: in cash or by card when you get the car'}\n` +
+      `Return: ${fmt(b.returnAt)} – ${this.loc(b.returnLocation)}\nTotal: $${b.quote.total}\n${b.paymentMethod === 'online' ? 'Payment: pay now – we will send you a payment link.' : 'Payment: in cash or by card when you get the car'}\n` +
       `\nFor your Zanzibar driving permit please send: driving licence, passport copy and a passport photo for each driver.\n` +
-      `\nKaribu Zanzibar!`);
+      `\nKaribu Zanzibar!`;
+  }
+
+  protected confirmMsg(b: Booking) { return this.wa(b.customer.phone, this.confirmText(b)); }
+
+  /* ---------- email to the guest, sent from info@kibabucars.com ---------- */
+  protected readonly composing = signal(false);
+  protected readonly sending = signal(false);
+  protected mailSubject = '';
+  protected mailBody = '';
+
+  protected startEmail(b: Booking) {
+    this.mailSubject = `Your Kibabu Cars booking ${b.ref} is confirmed`;
+    this.mailBody = this.confirmText(b, false);
+    this.composing.set(true);
+  }
+
+  async sendEmail(b: Booking) {
+    if (!this.mailSubject.trim() || !this.mailBody.trim()) return;
+    this.sending.set(true);
+    try {
+      const r = await this.api.emailGuest(b.id, this.mailSubject, this.mailBody);
+      this.toast(`Email sent to ${r.to} from info@kibabucars.com`);
+      this.composing.set(false);
+    } catch (e) { this.toast((e as Error).message); }
+    finally { this.sending.set(false); }
   }
 
   protected exportCsv() {

@@ -1,4 +1,4 @@
-import { BUSINESS, EXTRAS, LOCATIONS, whatsappLink } from './business';
+import { BUSINESS, EXTRAS, INFO_EMAIL, LOCATIONS, whatsappLink } from './business';
 import { LANG_LOCALE, Lang, Params, fill, switchPath } from './i18n';
 import { Booking, ContactMessage } from './models';
 
@@ -14,7 +14,7 @@ export const day = (iso: string, locale = 'en-GB') => new Date(iso).toLocaleDate
 const time = (iso: string, locale = 'en-GB') => new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: TZ });
 const loc = (id: string) => LOCATIONS.find((l) => l.id === id)?.label ?? id;
 /** every email goes out from info@kibabucars.com (the domain must be verified in Resend) */
-export const SENDER = `${BUSINESS.name} <${BUSINESS.email}>`;
+export const SENDER = `${BUSINESS.name} <${INFO_EMAIL}>`;
 /** links and images point here (the live site); the demo preview points at itself */
 let BASE = BUSINESS.siteUrl;
 export function setEmailBase(url: string) { BASE = url; }
@@ -122,7 +122,7 @@ ${[
 <div style="margin-top:20px">${button(whatsappLink(`Hello Kibabu Cars, my booking is ${b.ref}.`), t('Message us on WhatsApp'))}${button(site(switchPath('/my-booking', lang)), t('Manage booking'), false)}</div>`)}
 </table>`;
   const footer = `${esc(t('Questions? Reply to this email or message us on WhatsApp.'))}<br>
-<strong style="color:${C.ink}">${esc(BUSINESS.name)}</strong> &nbsp;${esc(BUSINESS.phone)} &nbsp;<a href="mailto:${esc(BUSINESS.email)}">${esc(BUSINESS.email)}</a>`;
+<strong style="color:${C.ink}">${esc(BUSINESS.name)}</strong> &nbsp;${esc(BUSINESS.phone)} &nbsp;<a href="mailto:${INFO_EMAIL}">${INFO_EMAIL}</a>`;
   return shell({ lang, body, footer, preheader: `${b.ref}: ${b.carName}, ${day(b.pickupAt, locale)} – ${day(b.returnAt, locale)}` });
 }
 
@@ -168,6 +168,21 @@ export function sampleBooking(car?: { id: string; name: string; pricePerDay: num
       { label: 'Cooler Box', amount: 5, t: 'Cooler Box' }] },
     createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
   } as unknown as Booking;
+}
+
+/** a message the office writes to a guest from the admin (sent from info@, replies come back to info@) */
+export function guestMessageEmail(b: Booking, message: string) {
+  const body = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td class="px" style="background:${C.sea};padding:26px 32px;color:#fff">
+<div style="font-size:13px;font-weight:700;color:#9fe3dc;margin:0 0 8px">Booking ${esc(b.ref)}</div>
+<div class="h1" style="font-size:24px;font-weight:800">${esc(b.carName)}</div>
+<div style="font-size:15px;color:#b8d6d8">${esc(day(b.pickupAt))} – ${esc(day(b.returnAt))}</div></td></tr>
+${section(`<div style="font-size:16px;line-height:1.6;white-space:pre-wrap">${esc(message)}</div>
+<div style="margin-top:20px">${button(whatsappLink(`Hello Kibabu Cars, my booking is ${b.ref}.`), 'Message us on WhatsApp')}${button(site('/my-booking'), 'Manage booking', false)}</div>`, false)}
+</table>`;
+  const footer = `Reply to this email or message us on WhatsApp.<br>
+<strong style="color:${C.ink}">${esc(BUSINESS.name)}</strong> &nbsp;${esc(BUSINESS.phone)} &nbsp;<a href="mailto:${INFO_EMAIL}">${INFO_EMAIL}</a>`;
+  return shell({ body, footer, preheader: message.slice(0, 90) });
 }
 
 /** contact-form message, to the office */

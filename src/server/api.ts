@@ -14,7 +14,7 @@ import { db } from './db';
 import { CONFIG } from './config';
 import { localizeCars, localizeContent } from '../shared/content';
 import { Dict, LANGS, Lang, Params, isLang, loadDict, translate, tx } from '../shared/i18n';
-import { notifyBooking, notifyMessage, previewEmail, sendTestEmail, SENDER } from './mail';
+import { notifyBooking, notifyMessage, previewEmail, sendGuestMessage, sendTestEmail, SENDER } from './mail';
 import { RESEND_KEY_RE, publicSettings, seal } from './settings';
 import { slugify } from '../shared/content';
 import { cleanAbout, cleanBlog, cleanBusiness, cleanCar, cleanCarTexts, cleanFaq, cleanRedirects, cleanAddons } from './clean';
@@ -420,6 +420,18 @@ export function createApiRouter(): Router {
       return;
     }
     res.json(updated);
+  });
+
+  // write to the guest from info@kibabucars.com (not from someone's personal mailbox)
+  api.post('/admin/bookings/:id/email', requireAdmin, rateLimit('guest-email', 30, 10 * 60 * 1000), async (req, res) => {
+    const b = db.read().bookings.find((x) => x.id === req.params['id']);
+    if (!b) { res.status(404).json({ error: tx('Not found') }); return; }
+    const subject = str(req.body?.subject, 200).replace(/[\r\n]+/g, ' ').trim();
+    const message = str(req.body?.message, 5000).trim();
+    if (!subject || !message) { res.status(400).json({ error: 'Write a subject and a message.' }); return; }
+    const err = await sendGuestMessage(b, subject, message);
+    if (err) { res.status(502).json({ error: err }); return; }
+    res.json({ ok: true, to: b.customer.email });
   });
 
   api.get('/admin/cars', requireAdmin, (_req, res) => {

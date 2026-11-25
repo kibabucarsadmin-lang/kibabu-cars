@@ -1,6 +1,6 @@
 import { ABOUT, AboutContent } from './about';
 import { BLOG, BlogPost } from './blog';
-import { Addons, BUSINESS, DEFAULT_ADDONS, applyAddons } from './business';
+import { Addons, BUSINESS, DEFAULT_ADDONS, INFO_EMAIL, WHATSAPP, applyAddons } from './business';
 import { FAQ, FaqGroup } from './faq';
 import { BlogBlock } from './blog';
 import { Lang } from './i18n';
@@ -128,7 +128,8 @@ export function defaultContent(): SiteContent {
  * rendered at the same time on the server never see each other's text.
  */
 export function applyContent(c: Partial<SiteContent>) {
-  if (c.business) Object.assign(BUSINESS, c.business, { stats: { ...BUSINESS.stats, ...c.business.stats } });
+  // email and WhatsApp are fixed: saved values (old Gmail address, old numbers) never replace them
+  if (c.business) Object.assign(BUSINESS, c.business, { stats: { ...BUSINESS.stats, ...c.business.stats }, email: INFO_EMAIL, whatsapp: WHATSAPP });
   if (c.addons) applyAddons(c.addons);
 }
 

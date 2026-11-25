@@ -49,15 +49,7 @@ import { AdminSettings, Api } from '../../core/api';
               <button mat-flat-button class="btn-brass" [disabled]="busy() || !key.trim()">Save key</button>
             </form>
 
-            <form (ngSubmit)="saveOwner()" class="row">
-              <mat-form-field class="grow">
-                <mat-label>Send booking alerts to</mat-label>
-                <mat-icon matPrefix>inbox</mat-icon>
-                <input matInput type="email" name="o" [(ngModel)]="owner" [placeholder]="s.email.ownerDefault || 'info@kibabucars.com'" />
-                <mat-hint>Leave empty to use {{ s.email.ownerDefault || 'info@kibabucars.com' }}</mat-hint>
-              </mat-form-field>
-              <button mat-stroked-button [disabled]="busy() || owner.trim() === s.email.ownerEmail">Save</button>
-            </form>
+            <p class="fixed"><mat-icon>inbox</mat-icon> Emails are sent from <strong>info&#64;kibabucars.com</strong>. Booking alerts, contact messages and guest replies all go to <strong>info&#64;kibabucars.com</strong>.</p>
 
             <div class="test">
               <h4>Send a test email</h4>
@@ -128,6 +120,8 @@ import { AdminSettings, Api } from '../../core/api';
     .row button { margin-top: 8px; }
     .grow { flex: 1; }
     .test { border-top: 1px solid var(--line); padding-top: 14px; }
+    .fixed { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 18px; padding: 12px 14px; border-radius: 10px; background: #eef7f6; line-height: 1.45; }
+    .fixed mat-icon { color: #007f86; flex: none; }
     .result { display: flex; gap: 8px; align-items: center; color: #00676d; font-weight: 600; }
     .result.bad { color: #a1281b; }
     .warn { display: flex; gap: 8px; align-items: flex-start; background: #fff6e0; border-radius: 12px; padding: 10px 12px; color: #6b4a00; }

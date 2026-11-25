@@ -19,8 +19,8 @@ import { ContentStore } from '../../core/content-store';
         <div class="grid">
           <mat-form-field><mat-label>Business name</mat-label><input matInput name="name" [(ngModel)]="b.name" /></mat-form-field>
           <mat-form-field><mat-label>Phone (as shown on the site)</mat-label><mat-icon matPrefix>call</mat-icon><input matInput name="phone" [(ngModel)]="b.phone" placeholder="+255 772 755 788" /></mat-form-field>
-          <mat-form-field><mat-label>WhatsApp number</mat-label><mat-icon matPrefix>chat</mat-icon><input matInput name="wa" [(ngModel)]="b.whatsapp" placeholder="255772755788" /><mat-hint>Country code, digits only</mat-hint></mat-form-field>
-          <mat-form-field><mat-label>Email</mat-label><mat-icon matPrefix>mail</mat-icon><input matInput type="email" name="email" [(ngModel)]="b.email" /></mat-form-field>
+          <mat-form-field><mat-label>WhatsApp number</mat-label><mat-icon matPrefix>chat</mat-icon><input matInput name="wa" value="0772 755 788" readonly /><mat-hint>Fixed for the whole site</mat-hint></mat-form-field>
+          <mat-form-field><mat-label>Email</mat-label><mat-icon matPrefix>mail</mat-icon><input matInput type="email" name="email" value="info@kibabucars.com" readonly /><mat-hint>Fixed: all emails use this address</mat-hint></mat-form-field>
           <mat-form-field><mat-label>Address</mat-label><mat-icon matPrefix>location_on</mat-icon><input matInput name="addr" [(ngModel)]="b.address" /></mat-form-field>
           <mat-form-field><mat-label>P.O. Box</mat-label><input matInput name="po" [(ngModel)]="b.poBox" /></mat-form-field>
         </div>

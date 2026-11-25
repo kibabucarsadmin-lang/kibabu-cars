@@ -1,6 +1,6 @@
 import nodemailer, { Transporter } from 'nodemailer';
 import { BUSINESS } from '../shared/business';
-import { SENDER, Tr, carPhotoUrl, day, guestEmail, messageEmail, officeEmail, sampleBooking as sample } from '../shared/email';
+import { SENDER, Tr, carPhotoUrl, day, guestEmail, guestMessageEmail, messageEmail, officeEmail, sampleBooking as sample } from '../shared/email';
 import { Booking, ContactMessage } from '../shared/models';
 import { CONFIG } from './config';
 import { db } from './db';
@@ -69,7 +69,7 @@ async function send(mail: Mail, idempotencyKey: string): Promise<string | null> 
   }
 }
 
-const owner = () => ownerEmail(BUSINESS.email);
+const owner = () => ownerEmail();
 const from = () => SENDER;
 export { SENDER, guestEmail, officeEmail };
 
@@ -138,4 +138,11 @@ export async function sendTestEmail(to: string): Promise<string | null> {
   const b = sampleBooking();
   return send({ from: from(), to, replyTo: owner(), subject: 'Test email from your Kibabu Cars website', html: guestEmail(b, undefined, 'en', photoOf(b)) },
     `test/${Date.now()}`);
+}
+
+/** A message the office writes to a guest from the admin: sent from info@, replies go to info@. */
+export async function sendGuestMessage(b: Booking, subject: string, message: string): Promise<string | null> {
+  if (!enabled()) return 'Add your Resend API key first (Admin → Email & database).';
+  return send({ from: from(), to: b.customer.email, replyTo: owner(), subject, html: guestMessageEmail(b, message) },
+    `guest-message/${b.id}/${Date.now()}`);
 }

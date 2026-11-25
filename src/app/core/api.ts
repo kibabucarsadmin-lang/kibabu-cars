@@ -57,6 +57,9 @@ export class Api {
   // admin
   login(password: string) { return this.run(firstValueFrom(this.http.post<{ token: string }>('/api/admin/login', { password }))); }
   stats() { return this.run(firstValueFrom(this.http.get<AdminStats>('/api/admin/stats', this.adminHeaders))); }
+  emailGuest(id: string, subject: string, message: string) {
+    return this.run(firstValueFrom(this.http.post<{ ok: boolean; to: string }>(`/api/admin/bookings/${id}/email`, { subject, message }, this.adminHeaders)));
+  }
   adminBookings() { return this.run(firstValueFrom(this.http.get<Booking[]>('/api/admin/bookings', this.adminHeaders))); }
   updateBooking(id: string, body: { status?: BookingStatus; adminNote?: string }) {
     return this.run(firstValueFrom(this.http.patch<Booking>(`/api/admin/bookings/${id}`, body, this.adminHeaders)));

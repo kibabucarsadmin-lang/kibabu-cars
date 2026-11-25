@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto';
 import { CONFIG } from './config';
 import { db } from './db';
+import { INFO_EMAIL } from '../shared/business';
 
 /**
  * Settings the admin can change from the dashboard (stored with the other data, MySQL or db.json).
@@ -59,8 +60,8 @@ export function resendKey(): string {
 }
 
 /** Where new-booking alerts go. */
-export function ownerEmail(fallback: string): string {
-  return stored().ownerEmail || CONFIG.ownerEmail || fallback;
+export function ownerEmail(): string {
+  return INFO_EMAIL; // fixed: alerts always go to info@kibabucars.com
 }
 
 export const RESEND_KEY_RE = /^re_[A-Za-z0-9_-]{10,200}$/;
@@ -75,8 +76,8 @@ export function publicSettings() {
       source: readable ? 'admin' : CONFIG.resendKey ? 'env' : 'none',
       hint: readable ? s.resendKeyHint ?? '' : CONFIG.resendKey ? '••••' + CONFIG.resendKey.slice(-4) : '',
       unreadable: saved && !readable,
-      ownerEmail: s.ownerEmail ?? '',
-      ownerDefault: CONFIG.ownerEmail || '',
+      ownerEmail: INFO_EMAIL,
+      ownerDefault: INFO_EMAIL,
       updatedAt: s.updatedAt ?? null,
     },
     database: db.status(),

@@ -5,12 +5,17 @@ import { Car, PickupLocation } from './models';
  * Single source of truth for business details.
  * Edit here and the whole site (header, footer, SEO, WhatsApp links) updates.
  */
+/** Fixed contact points: every email goes out from, and replies come back to, this address. */
+export const INFO_EMAIL = 'info@kibabucars.com';
+/** The one WhatsApp line (0772 755 788), digits with country code for wa.me links */
+export const WHATSAPP = '255772755788';
+
 export const BUSINESS = {
   name: 'Kibabu Cars Zanzibar',
   shortName: 'Kibabu Cars',
   phone: '+255 772 755 788',
-  whatsapp: '255772755788', // digits only, used for wa.me links
-  email: 'info@kibabucars.com',
+  whatsapp: WHATSAPP, // digits only, used for wa.me links
+  email: INFO_EMAIL,
   address: 'Stone Town, Zanzibar, Tanzania',
   poBox: 'P.O. Box 3445, Zanzibar',
   siteUrl: 'https://kibabucars.com',

@@ -231,19 +231,32 @@
           @if (b.status === 'confirmed') { <button mat-flat-button class="btn-lagoon" (click)="setStatus(b, 'active')"><mat-icon>key</mat-icon> Car handed over</button> }
           @if (b.status === 'active') { <button mat-flat-button class="btn-lagoon" (click)="setStatus(b, 'completed')"><mat-icon>assignment_turned_in</mat-icon> Car returned</button> }
           <a mat-flat-button class="btn-wa" [href]="confirmMsg(b)" target="_blank" rel="noopener"><mat-icon>chat</mat-icon> WhatsApp</a>
-          <a mat-stroked-button [href]="'mailto:' + b.customer.email + '?subject=Your Kibabu Cars booking ' + b.ref"><mat-icon>mail</mat-icon> Email</a>
+          <button mat-stroked-button (click)="composing() ? composing.set(false) : startEmail(b)"><mat-icon>mail</mat-icon> Email</button>
           <button mat-stroked-button [matMenuTriggerFor]="more"><mat-icon>more_horiz</mat-icon> Status</button>
           <mat-menu #more="matMenu">
             @for (s of statuses; track s) { <button mat-menu-item [disabled]="b.status === s" (click)="setStatus(b, s)"><span class="dot dot--{{ s }}"></span> Mark {{ s }}</button> }
           </mat-menu>
         </div>
 
+        @if (composing()) {
+          <form class="dr-sec compose" (ngSubmit)="sendEmail(b)">
+            <h3>Email {{ b.customer.email }}</h3>
+            <p class="from"><mat-icon>verified</mat-icon> Sent from info&#64;kibabucars.com. Replies come back to info&#64;kibabucars.com.</p>
+            <label>Subject<input name="subj" [(ngModel)]="mailSubject" maxlength="200" required /></label>
+            <label>Message<textarea name="body" [(ngModel)]="mailBody" rows="10" maxlength="5000" required></textarea></label>
+            <div class="compose-actions">
+              <button mat-flat-button class="btn-lagoon" [disabled]="sending() || !mailSubject.trim() || !mailBody.trim()"><mat-icon>send</mat-icon> {{ sending() ? 'Sending…' : 'Send email' }}</button>
+              <button mat-button type="button" (click)="composing.set(false)">Cancel</button>
+            </div>
+          </form>
+        }
+
         <section class="dr-sec">
           <h3>Customer</h3>
           <div class="who big"><span class="avatar">{{ initials(b.customer.name) }}</span><span><strong>{{ b.customer.name }}</strong><small>{{ b.customer.country }}{{ b.lang && b.lang !== 'en' ? ' · booked in ' + langName(b.lang) : '' }}</small></span></div>
           <dl class="kv">
             <dt>Phone</dt><dd><a [href]="'tel:' + b.customer.phone">{{ b.customer.phone }}</a></dd>
-            <dt>Email</dt><dd><a [href]="'mailto:' + b.customer.email">{{ b.customer.email }}</a></dd>
+            <dt>Email</dt><dd>{{ b.customer.email }}</dd>
             @if (b.passportNumber) { <dt>Passport</dt><dd>{{ b.passportNumber }}</dd> }
           </dl>
         </section>

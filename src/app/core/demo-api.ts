@@ -111,6 +111,10 @@ export const demoApiInterceptor: HttpInterceptorFn = (req, next) => {
       if (body['status']) b.status = body['status']; if (typeof body['adminNote'] === 'string') b.adminNote = body['adminNote'];
       b.updatedAt = now(); save(); return ok(b);
     }
+    if (m === 'POST' && /^\/admin\/bookings\/[^/]+\/email$/.test(path)) {
+      const b = db.bookings.find((x) => x.id === path.split('/')[3]); if (!b) return fail(404, 'Not found');
+      return ok({ ok: true, to: b.customer.email });
+    }
     if (m === 'POST' && path === '/admin/upload') return ok({ url: String(body['dataUrl']) }, 201); // demo: keep the image inline
     if (m === 'GET' && path === '/admin/content') return ok(db.content);
     if (path === '/admin/redirects') {
