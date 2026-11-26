@@ -324,6 +324,7 @@ export const T: Readonly<Record<string, string>> = {
   "Please complete all required fields.": "Bitte füllen Sie alle Pflichtfelder aus.",
   "Please enter a valid email": "Bitte geben Sie eine gültige E-Mail ein",
   "Please enter a valid phone number": "Bitte geben Sie eine gültige Telefonnummer ein",
+  "With country code, e.g. +39 333 123 4567": "Mit Ländervorwahl, z. B. +39 333 123 4567",
   "Please enter your name": "Bitte geben Sie Ihren Namen ein",
   "Please fill in your name, a valid email and a message.": "Bitte geben Sie Ihren Namen, eine gültige E-Mail und eine Nachricht ein.",
   "Please log in again.": "Bitte melden Sie sich erneut an.",

@@ -1,3 +1,4 @@
+import { waNumber } from './countries';
 import { BUSINESS, EXTRAS, INFO_EMAIL, LOCATIONS, whatsappLink } from './business';
 import { LANG_LOCALE, Lang, Params, fill, switchPath } from './i18n';
 import { Booking, ContactMessage } from './models';
@@ -129,7 +130,7 @@ ${[
 /** the office alert: who booked, how to reach them, what they booked */
 export function officeEmail(b: Booking, photo: string | null = null) {
   const c = b.customer;
-  const wa = 'https://wa.me/' + c.phone.replace(/\D/g, '');
+  const wa = 'https://wa.me/' + waNumber(c.phone, c.country);
   const info = (k: string, v: string) => `<tr><td style="padding:5px 14px 5px 0;font-size:14px;color:${C.muted};white-space:nowrap" valign="top">${esc(k)}</td><td style="padding:5px 0;font-size:15px">${v}</td></tr>`;
   const body = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 <tr><td class="px" style="background:${C.sea};padding:26px 32px;color:#ffffff">
@@ -193,7 +194,7 @@ export function messageEmail(msg: ContactMessage) {
 <div class="h1" style="font-size:24px;font-weight:800">${esc(msg.name)}</div>
 <div style="font-size:15px;color:#b8d6d8">${esc(msg.email)}${msg.phone ? ' &nbsp;' + esc(msg.phone) : ''}</div></td></tr>
 ${section(`<div style="font-size:16px;line-height:1.6;white-space:pre-wrap">${esc(msg.message)}</div>
-<div style="margin-top:20px">${button('mailto:' + msg.email, 'Reply by email')}${msg.phone ? button('https://wa.me/' + msg.phone.replace(/\D/g, ''), 'WhatsApp', false) : ''}</div>`, false)}
+<div style="margin-top:20px">${button('mailto:' + msg.email, 'Reply by email')}${msg.phone ? button('https://wa.me/' + waNumber(msg.phone), 'WhatsApp', false) : ''}</div>`, false)}
 </table>`;
   return shell({ body, footer: `Sent by the ${esc(BUSINESS.name)} website contact form.`, preheader: msg.message.slice(0, 90) });
 }

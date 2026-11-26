@@ -425,6 +425,7 @@ export const KEYS: readonly string[] = [
   "When do you need it?",
   "Where most guests collect their car",
   "Where should we bring the car?",
+  "With country code, e.g. +39 333 123 4567",
   "Within Zanzibar Town area",
   "Wrong password.",
   "years handing over keys",

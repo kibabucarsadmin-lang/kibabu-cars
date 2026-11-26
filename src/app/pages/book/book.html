@@ -229,7 +229,8 @@
               </mat-form-field>
               <mat-form-field>
                 <mat-label>{{ 'WhatsApp number' | t }}</mat-label>
-                <input matInput type="tel" formControlName="phone" autocomplete="tel" placeholder="+255 777 123 456" required />
+                <input matInput type="tel" formControlName="phone" autocomplete="tel" placeholder="+39 333 123 4567" required />
+                <mat-hint>{{ 'With country code, e.g. +39 333 123 4567' | t }}</mat-hint>
                 <mat-error>{{ 'Please enter a valid phone number' | t }}</mat-error>
               </mat-form-field>
               <mat-form-field>

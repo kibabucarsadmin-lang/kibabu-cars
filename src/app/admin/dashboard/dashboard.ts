@@ -29,6 +29,7 @@ import { AddonsEditor } from '../cms/addons-editor';
 import { RedirectsEditor } from '../cms/redirects-editor';
 import { EmailSettings } from '../cms/email-settings';
 import { SettingsEditor } from '../cms/settings-editor';
+import { waNumber } from '../../../shared/countries';
 
 type Section = 'overview' | 'bookings' | 'messages' | 'cars' | 'blog' | 'faq' | 'about' | 'addons' | 'redirects' | 'settings' | 'email';
 type Filter = BookingStatus | 'all' | 'upcoming';
@@ -263,8 +264,8 @@ export class Dashboard {
 
   protected loc(id: LocationId) { return LOCATIONS.find((l) => l.id === id)?.label ?? id; }
 
-  protected wa(phone: string, text: string) {
-    return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
+  protected wa(phone: string, text: string, country = '') {
+    return `https://wa.me/${waNumber(phone, country)}?text=${encodeURIComponent(text)}`;
   }
 
   /** the confirmation text, used for WhatsApp and as the start of an email */
@@ -277,7 +278,7 @@ export class Dashboard {
       `\nKaribu Zanzibar!`;
   }
 
-  protected confirmMsg(b: Booking) { return this.wa(b.customer.phone, this.confirmText(b)); }
+  protected confirmMsg(b: Booking) { return this.wa(b.customer.phone, this.confirmText(b), b.customer.country); }
 
   /* ---------- email to the guest, sent from info@kibabucars.com ---------- */
   protected readonly composing = signal(false);
