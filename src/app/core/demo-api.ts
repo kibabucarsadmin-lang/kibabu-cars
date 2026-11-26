@@ -109,6 +109,7 @@ export const demoApiInterceptor: HttpInterceptorFn = (req, next) => {
     if (m === 'PATCH' && path.startsWith('/admin/bookings/')) {
       const b = db.bookings.find((x) => x.id === id); if (!b) return fail(404, 'Not found');
       if (body['status']) b.status = body['status']; if (typeof body['adminNote'] === 'string') b.adminNote = body['adminNote'];
+      if (body['deleted'] === true) b.deletedAt = now(); if (body['deleted'] === false) delete b.deletedAt;
       b.updatedAt = now(); save(); return ok(b);
     }
     if (m === 'POST' && /^\/admin\/bookings\/[^/]+\/email$/.test(path)) {

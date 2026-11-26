@@ -61,7 +61,7 @@ export class Api {
     return this.run(firstValueFrom(this.http.post<{ ok: boolean; to: string }>(`/api/admin/bookings/${id}/email`, { subject, message }, this.adminHeaders)));
   }
   adminBookings() { return this.run(firstValueFrom(this.http.get<Booking[]>('/api/admin/bookings', this.adminHeaders))); }
-  updateBooking(id: string, body: { status?: BookingStatus; adminNote?: string }) {
+  updateBooking(id: string, body: { status?: BookingStatus; adminNote?: string; deleted?: boolean }) {
     return this.run(firstValueFrom(this.http.patch<Booking>(`/api/admin/bookings/${id}`, body, this.adminHeaders)));
   }
   adminCars() { return this.run(firstValueFrom(this.http.get<Car[]>('/api/admin/cars', this.adminHeaders))); }

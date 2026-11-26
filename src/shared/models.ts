@@ -104,6 +104,8 @@ export interface Booking extends BookingRequest {
   createdAt: string;
   updatedAt: string;
   adminNote?: string;
+  /** soft delete: hidden from the admin list and no longer holds the car; can be restored */
+  deletedAt?: string;
 }
 
 export interface ContactMessage {

@@ -1,18 +1,15 @@
 import { UsdPipe } from '../../shared/usd.pipe';
 import { DatePipe } from '@angular/common';
-import { Component, HostListener, computed, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { EXTRAS, INSURANCE, LOCATIONS } from '../../../shared/business';
@@ -32,15 +29,23 @@ import { SettingsEditor } from '../cms/settings-editor';
 import { waNumber } from '../../../shared/countries';
 
 type Section = 'overview' | 'bookings' | 'messages' | 'cars' | 'blog' | 'faq' | 'about' | 'addons' | 'redirects' | 'settings' | 'email';
-type Filter = BookingStatus | 'all' | 'upcoming';
+type Filter = 'action' | 'next' | 'out' | 'done' | 'cancelled' | 'all';
+type Tone = 'warn' | 'new' | 'soon' | 'out' | 'done' | 'off';
+/** What a booking needs, in plain words: where it is, and the one thing to do next. */
+interface BookingInfo {
+  stage: Exclude<Filter, 'all'>;
+  label: string;
+  tone: Tone;
+  next?: { label: string; icon: string; status: BookingStatus };
+}
 const DAY = 24 * 60 * 60 * 1000;
 
 @Component({
   selector: 'kb-dashboard',
   imports: [UsdPipe, 
     DatePipe, FormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule,
-    MatInputModule, MatMenuModule, MatPaginatorModule, MatProgressBarModule, MatSlideToggleModule, MatSnackBarModule,
-    MatSortModule, MatTableModule, MatTooltipModule,
+    MatInputModule, MatMenuModule, MatProgressBarModule, MatSlideToggleModule, MatSnackBarModule,
+    MatTooltipModule,
     CarsEditor, BlogEditor, FaqEditor, AboutEditor, AddonsEditor, RedirectsEditor, SettingsEditor, EmailSettings,
   ],
   templateUrl: './dashboard.html',
@@ -52,15 +57,17 @@ export class Dashboard {
   private snack = inject(MatSnackBar);
 
   protected readonly statuses: BookingStatus[] = ['pending', 'confirmed', 'active', 'completed', 'cancelled'];
-  protected readonly cols = ['ref', 'customer', 'car', 'pickup', 'return', 'total', 'status', 'actions'];
 
   protected readonly loading = signal(false);
   protected readonly stats = signal<AdminStats | null>(null);
-  protected readonly bookings = signal<Booking[]>([]);
+  /** everything from the server, deleted ones included */
+  protected readonly allBookings = signal<Booking[]>([]);
+  /** what the rest of the admin works with: deleted bookings left out */
+  protected readonly bookings = computed(() => this.allBookings().filter((b) => !b.deletedAt));
   protected readonly cars = signal<Car[]>([]);
   protected readonly messages = signal<ContactMessage[]>([]);
   protected readonly selected = signal<Booking | null>(null);
-  protected readonly statusFilter = signal<Filter>('upcoming');
+  protected readonly statusFilter = signal<Filter>('next');
 
   /* ---------- navigation ---------- */
   protected readonly navOps: { id: Section; label: string; icon: string }[] = [
@@ -91,10 +98,17 @@ export class Dashboard {
     settings: { t: 'Contact & settings', d: 'Phone, WhatsApp, email, social links and Google settings.' },
     email: { t: 'Email & database', d: 'Connect Resend so guests and you get an email for every booking.' },
   };
-  protected readonly filters: { id: Filter; label: string }[] = [
-    { id: 'upcoming', label: 'Upcoming' }, { id: 'active', label: 'On the road' }, { id: 'pending', label: 'Pending' },
-    { id: 'confirmed', label: 'Confirmed' }, { id: 'completed', label: 'Completed' }, { id: 'cancelled', label: 'Cancelled' }, { id: 'all', label: 'All' },
+  protected readonly filters: { id: Filter; label: string; hint: string }[] = [
+    { id: 'action', label: 'Needs action', hint: 'Pickup or return time has passed and the booking was not updated' },
+    { id: 'next', label: 'Coming up', hint: 'Waiting for pickup' },
+    { id: 'out', label: 'Out now', hint: 'The guest has the car' },
+    { id: 'done', label: 'Finished', hint: 'Car returned' },
+    { id: 'cancelled', label: 'Cancelled', hint: '' },
+    { id: 'all', label: 'All', hint: '' },
   ];
+  protected readonly statusNames: Record<BookingStatus, string> = {
+    pending: 'New (not confirmed)', confirmed: 'Confirmed, waiting for pickup', active: 'Out now (guest has the car)', completed: 'Finished (car returned)', cancelled: 'Cancelled',
+  };
   protected readonly section = signal<Section>(this.savedSection());
   protected readonly navOpen = signal(false);
   protected readonly today = new Date();
@@ -109,7 +123,9 @@ export class Dashboard {
     try { sessionStorage.setItem('kb_admin_section', s); } catch { /* ignore */ }
     if (typeof window !== 'undefined') window.scrollTo({ top: 0 });
   }
-  protected openBookings(f: Filter) { this.statusFilter.set(f); this.go('bookings'); }
+  private picked = false;
+  protected pick(f: Filter) { this.picked = true; this.statusFilter.set(f); }
+  protected openBookings(f: Filter) { this.pick(f); this.go('bookings'); }
   protected openBooking(b: Booking) { this.open(b); }
   @HostListener('document:keydown.escape') protected onEsc() {
     if (this.selected()) this.selected.set(null);
@@ -121,12 +137,53 @@ export class Dashboard {
   private isOpen(b: Booking) {
     return ['pending', 'confirmed'].includes(b.status) && +new Date(b.returnAt) >= Date.now() - DAY / 4;
   }
-  /** Shown next to the status so nothing is forgotten. */
+  /** One plain-language state per booking, and the next step to take. */
+  protected info(b: Booking): BookingInfo {
+    const now = Date.now(), hour = 60 * 60 * 1000;
+    const pick = +new Date(b.pickupAt), ret = +new Date(b.returnAt);
+    if (b.status === 'cancelled') return { stage: 'cancelled', label: 'Cancelled', tone: 'off' };
+    if (b.status === 'completed') return { stage: 'done', label: 'Finished – car returned', tone: 'done' };
+    if (b.status === 'active') {
+      if (ret < now - hour) return { stage: 'action', label: `Return overdue (${this.ago(b.returnAt)})`, tone: 'warn', next: { label: 'Car returned', icon: 'assignment_turned_in', status: 'completed' } };
+      return { stage: 'out', label: `Out now – returns ${this.when(b.returnAt)}`, tone: 'out', next: { label: 'Car returned', icon: 'assignment_turned_in', status: 'completed' } };
+    }
+    // pending or confirmed: the car has not gone out yet
+    if (ret < now - hour) return { stage: 'action', label: 'Trip dates are over – update it', tone: 'warn', next: { label: 'Mark finished', icon: 'assignment_turned_in', status: 'completed' } };
+    if (pick < now - hour) return { stage: 'action', label: `Pickup was ${this.ago(b.pickupAt)} – did the car go out?`, tone: 'warn', next: { label: 'Car handed over', icon: 'key', status: 'active' } };
+    if (b.status === 'pending') return { stage: 'next', label: 'New – please confirm', tone: 'new', next: { label: 'Confirm', icon: 'check', status: 'confirmed' } };
+    return { stage: 'next', label: `Pickup ${this.when(b.pickupAt)}`, tone: this.daysFromToday(b.pickupAt) <= 1 ? 'soon' : 'new', next: { label: 'Car handed over', icon: 'key', status: 'active' } };
+  }
+  /** calendar days from today (0 = today, 1 = tomorrow, -1 = yesterday) */
+  private daysFromToday(iso: string) {
+    const d = new Date(iso); const t = new Date();
+    return Math.round((+new Date(d.getFullYear(), d.getMonth(), d.getDate()) - +new Date(t.getFullYear(), t.getMonth(), t.getDate())) / DAY);
+  }
+  private time(iso: string) { return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); }
+  /** "today at 12:00", "tomorrow at 09:30", "in 4 days (Mon 30 Nov)" */
+  protected when(iso: string) {
+    const n = this.daysFromToday(iso);
+    if (n === 0) return `today at ${this.time(iso)}`;
+    if (n === 1) return `tomorrow at ${this.time(iso)}`;
+    return `in ${n} days`;
+  }
+  /** "2 hours ago", "yesterday", "5 days ago" */
+  private ago(iso: string) {
+    const n = -this.daysFromToday(iso);
+    if (n <= 0) { const h = Math.max(1, Math.round((Date.now() - +new Date(iso)) / 3600000)); return `${h} hour${h > 1 ? 's' : ''} ago`; }
+    return n === 1 ? 'yesterday' : `${n} days ago`;
+  }
+  /** the date that matters for the row: return date while the car is out, otherwise pickup */
+  protected keyDate(b: Booking) { return this.info(b).stage === 'out' ? b.returnAt : b.pickupAt; }
+  protected dayLabel(iso: string) {
+    const n = this.daysFromToday(iso);
+    const d = new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    return n === 0 ? `Today · ${d}` : n === 1 ? `Tomorrow · ${d}` : n === -1 ? `Yesterday · ${d}` : d;
+  }
+  protected payText(b: Booking) { return b.paymentMethod === 'online' ? 'Pay now (online)' : 'Pays at pickup'; }
+  /** short text for the overview lists */
   protected attention(b: Booking): string | null {
-    const now = Date.now();
-    if (['pending', 'confirmed'].includes(b.status) && +new Date(b.pickupAt) < now - 60 * 60 * 1000 && +new Date(b.returnAt) > now) return 'Mark handed over';
-    if (['pending', 'confirmed', 'active'].includes(b.status) && +new Date(b.returnAt) < now - 60 * 60 * 1000) return b.status === 'active' ? 'Return overdue' : 'Trip ended, update status';
-    return null;
+    const i = this.info(b);
+    return i.stage === 'action' ? i.label : null;
   }
   protected readonly upcoming = computed(() => this.bookings().filter((b) => this.isOpen(b)));
   protected readonly week = computed(() =>
@@ -149,8 +206,7 @@ export class Dashboard {
   }
   protected countFor(f: Filter): number {
     if (f === 'all') return this.bookings().length;
-    if (f === 'upcoming') return this.upcoming().length;
-    return this.bookings().filter((b) => b.status === f).length;
+    return this.bookings().filter((b) => this.info(b).stage === f).length;
   }
   protected initials(name: string) {
     return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join('');
@@ -165,20 +221,20 @@ export class Dashboard {
   protected readonly search = signal('');
   protected note = '';
 
-  protected readonly ds = new MatTableDataSource<Booking>([]);
-  private sort = viewChild(MatSort);
-  private paginator = viewChild(MatPaginator);
+  protected readonly limit = signal(50);
 
+  /** show deleted bookings instead of the normal list */
+  protected readonly showDeleted = signal(false);
+  protected readonly deletedCount = computed(() => this.allBookings().filter((b) => b.deletedAt).length);
+
+  /** every booking, newest booking first (booked today on top, then yesterday…) */
   protected readonly filtered = computed(() => {
-    const f = this.statusFilter();
     const q = this.search().trim().toLowerCase();
-    return this.bookings().filter((b) => {
-      if (f === 'upcoming') {
-        if (!this.isOpen(b)) return false;
-      } else if (f !== 'all' && b.status !== f) return false;
-      if (!q) return true;
-      return [b.ref, b.customer.name, b.customer.email, b.customer.phone, b.carName].join(' ').toLowerCase().includes(q);
-    });
+    const del = this.showDeleted();
+    return this.allBookings()
+      .filter((b) => !!b.deletedAt === del)
+      .filter((b) => !q || [b.ref, b.customer.name, b.customer.email, b.customer.phone, b.carName].join(' ').toLowerCase().includes(q))
+      .sort((x, y) => y.createdAt.localeCompare(x.createdAt));
   });
 
   protected readonly todayPickups = computed(() => {
@@ -190,22 +246,7 @@ export class Dashboard {
 
   constructor() {
     inject(Seo).set({ title: 'Dashboard', description: 'Admin', path: '/admin', noindex: true });
-    this.ds.sortingDataAccessor = (b, col) => {
-      switch (col) {
-        case 'customer': return b.customer.name.toLowerCase();
-        case 'car': return b.carName;
-        case 'pickup': return b.pickupAt;
-        case 'return': return b.returnAt;
-        case 'total': return b.quote.total;
-        default: return (b as unknown as Record<string, string>)[col] ?? '';
-      }
-    };
-    effect(() => {
-      this.ds.data = this.filtered();
-      const s = this.sort(); const p = this.paginator();
-      if (s && this.ds.sort !== s) this.ds.sort = s;
-      if (p && this.ds.paginator !== p) this.ds.paginator = p;
-    });
+    effect(() => { this.search(); this.limit.set(50); }); // back to the first 50 when the search changes
     this.load();
   }
 
@@ -216,7 +257,7 @@ export class Dashboard {
         this.api.stats(), this.api.adminBookings(), this.api.adminCars(), this.api.messages(),
       ]);
       this.stats.set(stats);
-      this.bookings.set(bookings);
+      this.allBookings.set(bookings);
       this.cars.set(cars);
       this.messages.set(messages);
       const sel = this.selected();
@@ -238,7 +279,25 @@ export class Dashboard {
     try {
       const updated = await this.api.updateBooking(b.id, { status });
       this.replace(updated);
-      this.toast(`${b.ref} marked ${status}`);
+      this.toast(`${b.ref}: ${this.statusNames[status]}`);
+      this.stats.set(await this.api.stats());
+    } catch (e) { this.toast((e as Error).message); }
+  }
+
+  async deleteBooking(b: Booking) {
+    if (typeof window !== 'undefined' && !window.confirm(`Delete booking ${b.ref} (${b.customer.name})?\n\nIt is hidden from the list and the car becomes free again. You can restore it from "Deleted".`)) return;
+    try {
+      this.replace(await this.api.updateBooking(b.id, { deleted: true }));
+      this.selected.set(null);
+      this.toast(`${b.ref} deleted`);
+      this.stats.set(await this.api.stats());
+    } catch (e) { this.toast((e as Error).message); }
+  }
+
+  async restoreBooking(b: Booking) {
+    try {
+      this.replace(await this.api.updateBooking(b.id, { deleted: false }));
+      this.toast(`${b.ref} restored`);
       this.stats.set(await this.api.stats());
     } catch (e) { this.toast((e as Error).message); }
   }
@@ -326,7 +385,7 @@ export class Dashboard {
   }
 
   private replace(b: Booking) {
-    this.bookings.update((l) => l.map((x) => (x.id === b.id ? b : x)));
+    this.allBookings.update((l) => l.map((x) => (x.id === b.id ? b : x)));
     if (this.selected()?.id === b.id) this.selected.set(b);
   }
 

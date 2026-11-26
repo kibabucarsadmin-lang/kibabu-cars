@@ -122,6 +122,7 @@ function availableUnits(car: Car, pickupAt: string, returnAt: string, ignoreId?:
       (b) =>
         b.carId === car.id &&
         b.id !== ignoreId &&
+        !b.deletedAt &&
         BLOCKING.includes(b.status) &&
         overlaps(b.pickupAt, b.returnAt, pickupAt, returnAt),
     ).length;
@@ -278,7 +279,7 @@ export function createApiRouter(): Router {
     };
     // re-check inside the write so two simultaneous bookings can't take the last car
     const saved = db.write((d) => {
-      const taken = d.bookings.filter((b) => b.carId === car.id && BLOCKING.includes(b.status) && overlaps(b.pickupAt, b.returnAt, booking.pickupAt, booking.returnAt)).length;
+      const taken = d.bookings.filter((b) => b.carId === car.id && !b.deletedAt && BLOCKING.includes(b.status) && overlaps(b.pickupAt, b.returnAt, booking.pickupAt, booking.returnAt)).length;
       if (taken >= car.units) return false;
       d.bookings.push(booking);
       return true;
@@ -298,7 +299,7 @@ export function createApiRouter(): Router {
   api.get('/bookings/lookup', rateLimit('lookup', 20, 10 * 60 * 1000), (req, res) => {
     const ref = String(req.query['ref'] || '').trim().toUpperCase();
     const email = String(req.query['email'] || '').trim().toLowerCase();
-    const b = db.read().bookings.find((x) => x.ref === ref && x.customer.email === email);
+    const b = db.read().bookings.find((x) => x.ref === ref && x.customer.email === email && !x.deletedAt);
     if (!b) {
       res.status(404).json({ error: tx('No booking found with that reference and email.') });
       return;
@@ -374,7 +375,8 @@ export function createApiRouter(): Router {
   });
 
   api.get('/admin/stats', requireAdmin, (_req, res) => {
-    const { bookings, messages } = db.read();
+    const { messages } = db.read();
+    const bookings = db.read().bookings.filter((b) => !b.deletedAt);
     const t = Date.now();
     const week = t + 7 * 24 * 60 * 60 * 1000;
     const byStatus = Object.fromEntries(STATUSES.map((s) => [s, 0])) as Record<BookingStatus, number>;
@@ -411,6 +413,8 @@ export function createApiRouter(): Router {
       const b = d.bookings.find((x) => x.id === req.params['id']);
       if (!b) return null;
       if (status) b.status = status;
+      if (req.body?.deleted === true) b.deletedAt = now();
+      if (req.body?.deleted === false) delete b.deletedAt;
       if (typeof req.body?.adminNote === 'string') b.adminNote = str(req.body.adminNote, 2000);
       b.updatedAt = now();
       return b;
@@ -455,7 +459,7 @@ export function createApiRouter(): Router {
 
   api.delete('/admin/cars/:id', requireAdmin, (req, res) => {
     const id = req.params['id'];
-    const upcoming = db.read().bookings.some((b) => b.carId === id && BLOCKING.includes(b.status) && new Date(b.returnAt) > new Date());
+    const upcoming = db.read().bookings.some((b) => b.carId === id && !b.deletedAt && BLOCKING.includes(b.status) && new Date(b.returnAt) > new Date());
     if (upcoming) {
       res.status(409).json({ error: tx('This car has upcoming bookings. Take it offline instead, or cancel those bookings first.') });
       return;
