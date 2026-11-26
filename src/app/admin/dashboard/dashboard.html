@@ -146,23 +146,36 @@
             </label>
           </div>
 
-          <section class="card dt-card">
-            <table class="dt">
-              <thead><tr><th>Reference</th><th>Customer</th><th>Phone</th>@if (showDeleted()) { <th></th> }</tr></thead>
-              <tbody>
-                @for (b of filtered().slice(0, limit()); track b.id) {
-                  <tr [class.sel]="selected()?.id === b.id" [class.cancelled]="b.status === 'cancelled'" (click)="openBooking(b)" tabindex="0" (keydown.enter)="openBooking(b)">
-                    <td><span class="ref">{{ b.ref }}</span></td>
-                    <td><strong>{{ b.customer.name }}</strong></td>
-                    <td class="nowrap">{{ b.customer.phone }}</td>
-                    @if (showDeleted()) { <td class="num"><button mat-stroked-button (click)="$event.stopPropagation(); restoreBooking(b)"><mat-icon>restore</mat-icon> Restore</button></td> }
-                  </tr>
-                } @empty {
-                  <tr><td [attr.colspan]="showDeleted() ? 4 : 3"><div class="empty"><mat-icon>{{ search().trim() ? 'search_off' : 'inbox' }}</mat-icon>
-                    <p>{{ search().trim() ? 'No booking matches your search.' : showDeleted() ? 'No deleted bookings.' : 'No bookings yet.' }}</p></div></td></tr>
-                }
-              </tbody>
-            </table>
+          <section class="card bl">
+            <div class="bl-head" aria-hidden="true"><span>Customer</span><span>Reference</span><span>Phone</span><span></span></div>
+            @for (b of filtered().slice(0, limit()); track b.id) {
+              <div class="bl-row" role="button" tabindex="0" [class.sel]="selected()?.id === b.id" [class.cancelled]="b.status === 'cancelled'"
+                (click)="openBooking(b)" (keydown.enter)="openBooking(b)">
+                <div class="bl-who">
+                  <span class="bl-av" [style.background]="avatarColor(b.customer.name)">{{ initials(b.customer.name) }}</span>
+                  <span class="bl-name">
+                    <strong>{{ b.customer.name }}</strong>
+                    <small>Booked {{ b.createdAt | date: 'd MMM y · HH:mm' }}@if (b.status === 'cancelled') { · <em class="cx">Cancelled</em> }</small>
+                  </span>
+                </div>
+                <div class="bl-ref"><span class="ref-chip">{{ b.ref }}</span></div>
+                <div class="bl-phone">
+                  <span>{{ b.customer.phone }}</span>
+                </div>
+                <div class="bl-end">
+                  @if (showDeleted()) {
+                    <button mat-stroked-button (click)="$event.stopPropagation(); restoreBooking(b)"><mat-icon>restore</mat-icon> Restore</button>
+                  } @else {
+                    <a class="bl-wa" [href]="wa(b.customer.phone, 'Hello ' + b.customer.name.split(' ')[0] + ', this is Kibabu Cars Zanzibar. ', b.customer.country)" target="_blank" rel="noopener"
+                      (click)="$event.stopPropagation()" aria-label="WhatsApp {{ b.customer.name }}" matTooltip="WhatsApp"><mat-icon>chat</mat-icon></a>
+                    <mat-icon class="bl-go">chevron_right</mat-icon>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty big"><mat-icon>{{ search().trim() ? 'search_off' : 'inbox' }}</mat-icon>
+                <p>{{ search().trim() ? 'No booking matches your search.' : showDeleted() ? 'No deleted bookings.' : 'No bookings yet.' }}</p></div>
+            }
             @if (filtered().length > limit()) {
               <div class="dt-more"><button mat-stroked-button (click)="limit.set(limit() + 50)">Show more ({{ filtered().length - limit() }} left)</button></div>
             }

@@ -403,3 +403,48 @@ table.dt .cx { display: block; color: #b42318; font-weight: 700; }
 table.dt td .mat-mdc-button-base { height: 32px; font-size: .8rem; }
 .deleted-link { margin-top: 10px; color: var(--a-muted); }
 .btn-del { color: #b42318 !important; }
+
+/* ---------- bookings list (attractive, still just three things per row) ---------- */
+.bl { overflow: hidden; padding: 6px; }
+.bl-head, .bl-row { display: grid; grid-template-columns: minmax(220px, 1.6fr) minmax(120px, .8fr) minmax(160px, 1fr) 88px; align-items: center; gap: 16px; }
+.bl-head { padding: 10px 16px 8px; font-size: .72rem; font-weight: 800; color: var(--a-muted); }
+.bl-row {
+  position: relative; padding: 12px 16px; border-radius: 12px; cursor: pointer; outline: 0;
+  transition: background-color .15s ease, box-shadow .15s ease;
+}
+.bl-row + .bl-row::before { content: ''; position: absolute; top: 0; left: 16px; right: 16px; border-top: 1px solid var(--a-line); }
+.bl-row:hover, .bl-row:focus-visible { background: #f2f9f8; box-shadow: 0 1px 0 rgba(6,50,61,.04); }
+.bl-row:hover::before, .bl-row:hover + .bl-row::before, .bl-row.sel::before, .bl-row.sel + .bl-row::before { border-color: transparent; }
+.bl-row:focus-visible { box-shadow: inset 0 0 0 2px var(--lagoon-2); }
+.bl-row.sel { background: #e7f5f3; }
+.bl-row.cancelled { opacity: .55; }
+.bl-who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.bl-av { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #fff; font-size: .82rem; font-weight: 800; letter-spacing: .02em; }
+.bl-name { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+.bl-name strong { font-size: .96rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bl-name small { color: var(--a-muted); font-size: .78rem; }
+.bl-name .cx { font-style: normal; color: #b42318; font-weight: 700; }
+.ref-chip { display: inline-block; padding: 4px 10px; border-radius: 8px; background: #e9f6f4; color: #00676d; font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: .82rem; font-weight: 700; letter-spacing: .02em; }
+.bl-phone { font-variant-numeric: tabular-nums; color: var(--a-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bl-end { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.bl-wa { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #e6f8ec; color: #128c4a; text-decoration: none; transition: background-color .15s ease, transform .15s ease; }
+.bl-wa:hover { background: #25d366; color: #fff; transform: scale(1.06); }
+.bl-wa mat-icon { font-size: 18px; width: 18px; height: 18px; }
+.bl-go { color: #a9bfc0; transition: transform .15s ease, color .15s ease; }
+.bl-row:hover .bl-go { color: var(--lagoon); transform: translateX(2px); }
+.bl-end .mat-mdc-button-base { height: 32px; font-size: .8rem; }
+@media (prefers-reduced-motion: reduce) { .bl-row, .bl-wa, .bl-go { transition: none; } }
+@media (max-width: 700px) {
+  .bl { padding: 4px; }
+  .bl-head { display: none; }
+  .bl-row { grid-template-columns: auto 1fr auto; grid-template-areas: 'who who end' 'ref phone end'; gap: 6px 10px; padding: 12px; }
+  .bl-row + .bl-row::before { left: 12px; right: 12px; }
+  .bl-who { grid-area: who; }
+  .bl-ref { grid-area: ref; margin-left: 52px; }
+  .bl-phone { grid-area: phone; font-size: .82rem; color: var(--a-muted); }
+  .bl-end { grid-area: end; }
+  .bl-av { width: 40px; height: 40px; }
+  .bl-name strong { font-size: .92rem; }
+  .bl-go { display: none; }
+  .ref-chip { font-size: .74rem; padding: 3px 8px; }
+}

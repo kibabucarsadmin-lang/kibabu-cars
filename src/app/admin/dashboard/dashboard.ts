@@ -208,6 +208,12 @@ export class Dashboard {
     if (f === 'all') return this.bookings().length;
     return this.bookings().filter((b) => this.info(b).stage === f).length;
   }
+  /** a calm colour per guest, the same every time for the same name */
+  protected avatarColor(name: string) {
+    const palette = ['#0f766e', '#1d4ed8', '#7c3aed', '#be185d', '#b45309', '#15803d', '#0e7490', '#9333ea'];
+    let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+    return palette[h % palette.length];
+  }
   protected initials(name: string) {
     return name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join('');
   }
